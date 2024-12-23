@@ -286,7 +286,7 @@ class ShmtuDecode {
         return courseTypes
     }
 
-    
+
     static func InsertToComplete(in inputString: String) -> String {
         let targetLine = "function containFakeCourse(fakeCourse)"
         let newLine = "            activity = new"
@@ -339,6 +339,9 @@ class ShmtuCalendar: ObservableObject {
 
     // 存储课程类型
     private var courseTypes: [ShmtuCourseType] = []
+    
+    // 新增的提醒时间偏移量属性（以秒为单位）
+    var reminderOffset: TimeInterval? = nil
 
     // 简化的初始化方法
     init() {
@@ -427,10 +430,15 @@ class ShmtuCalendar: ObservableObject {
             event.notes = notes
         }
         
-        // 添加提醒，提前30分钟
-        let alarm = EKAlarm(relativeOffset: -1800) // 30分钟 = 1800秒
-        event.addAlarm(alarm)
-        print("提醒已设置：提前30分钟")
+        // 根据 reminderOffset 设置提醒
+        if let offset = reminderOffset {
+            let alarm = EKAlarm(relativeOffset: offset)
+            event.addAlarm(alarm)
+            let minutes = abs(Int(offset) / 60)
+            print("提醒已设置：提前\(minutes)分钟")
+        } else {
+            print("不设置提醒")
+        }
         
         self.eventsToAdd.append(event)
         print("事件已添加到待保存列表: \(event.title ?? "")")
