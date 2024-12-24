@@ -23,8 +23,6 @@ struct ContentView: View {
     @State private var reminderTime = "不提醒"
     let reminderOptions = ["不提醒", "15分钟", "30分钟"]
     
-    @StateObject private var ecnucalendarHelper = EcnuCalendar()
-    
     var body: some View {
         NavigationView {
             List {
