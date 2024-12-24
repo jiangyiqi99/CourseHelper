@@ -29,9 +29,22 @@
 		EFDB0A162D1858C8006999D3 /* CourseHelperUITests.xctest */ = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = CourseHelperUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		EFBFF26D2D19C2B500C6E152 /* Exceptions for "CourseHelper" folder in "CourseHelper" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = EFDB09FB2D1858C7006999D3 /* CourseHelper */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		EFDB09FE2D1858C7006999D3 /* CourseHelper */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				EFBFF26D2D19C2B500C6E152 /* Exceptions for "CourseHelper" folder in "CourseHelper" target */,
+			);
 			path = CourseHelper;
 			sourceTree = "<group>";
 		};
@@ -397,12 +410,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.0.03;
+				CURRENT_PROJECT_VERSION = 1.0.0.103;
 				DEVELOPMENT_ASSET_PATHS = "\"CourseHelper/Preview Content\"";
 				DEVELOPMENT_TEAM = LE5RP3BZSX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CourseHelper/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Add Courses to Calendars";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
@@ -429,12 +444,14 @@
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				ASSETCATALOG_COMPILER_INCLUDE_ALL_APPICON_ASSETS = NO;
 				CODE_SIGN_STYLE = Automatic;
-				CURRENT_PROJECT_VERSION = 1.0.03;
+				CURRENT_PROJECT_VERSION = 1.0.0.103;
 				DEVELOPMENT_ASSET_PATHS = "\"CourseHelper/Preview Content\"";
 				DEVELOPMENT_TEAM = LE5RP3BZSX;
 				ENABLE_PREVIEWS = YES;
 				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = CourseHelper/Info.plist;
 				INFOPLIST_KEY_LSApplicationCategoryType = "public.app-category.education";
+				INFOPLIST_KEY_NSCalendarsUsageDescription = "Add Courses to Calendars";
 				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
 				INFOPLIST_KEY_UIApplicationSupportsIndirectInputEvents = YES;
 				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
