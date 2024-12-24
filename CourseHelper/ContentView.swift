@@ -14,8 +14,8 @@ struct ContentView: View {
     let universities = ["上海海事大学", "华东师范大学"]
     @State private var showConfirmButton = false  // 控制确认按钮显示的状态变量
     
-    @State private var Chosen_School = ""
-    @State private var Captured_Data = ""
+    @State private var chosenSchool = ""
+    @State private var capturedData = ""
     @State private var semesterInfo = ""
     
     
@@ -35,8 +35,8 @@ struct ContentView: View {
                             destination: ShmtuWebView(url: URL(string: "https://jwxt.shmtu.edu.cn/shmtu/courseTableForStd.action")!) { response, semeInfo in
                                 // 接收来自 WebView 的响应数据
                                 self.semesterInfo = semeInfo
-                                self.Captured_Data = response
-                                self.Chosen_School = "上海海事大学"
+                                self.capturedData = response
+                                self.chosenSchool = "上海海事大学"
                                 self.showConfirmButton = true
                             }
                         ) {
@@ -46,9 +46,9 @@ struct ContentView: View {
                         NavigationLink(
                             destination: EcnuWebView(url: URL(string: "https://sso.ecnu.edu.cn/login?service=http:%2F%2Fapplicationnewjw.ecnu.edu.cn%2Feams%2Fhome.action%3Furl%3DcourseTableForStd")!) { response, semeInfo in
                                 // 接收来自 EcnuWebView 的响应数据
-                                self.Captured_Data = response
+                                self.capturedData = response
                                 self.semesterInfo = semeInfo
-                                self.Chosen_School = "华东师范大学"
+                                self.chosenSchool = "华东师范大学"
                                 self.showConfirmButton = true
                             }
                         ) {
@@ -78,10 +78,10 @@ struct ContentView: View {
     
     var confirmButton: some View {
         Button("导入日历") {
-            print("选择的学校: \(Chosen_School)")
-            if Chosen_School == "上海海事大学" {
+            print("选择的学校: \(chosenSchool)")
+            if chosenSchool == "上海海事大学" {
                 ShmtuDecode.updateSemesterStartDate(with: semesterInfo)
-                let inputString = Captured_Data
+                let inputString = capturedData
                 
                 let processedString = ShmtuDecode.InsertToComplete(in: inputString)
                 // print(Captured_Data)
@@ -91,9 +91,9 @@ struct ContentView: View {
                 
             }
             
-            if Chosen_School == "华东师范大学" {
+            if chosenSchool == "华东师范大学" {
                 EcnuDecode.updateSemesterStartDate(with: semesterInfo)
-                let inputString = Captured_Data
+                let inputString = capturedData
                 
                 let processedString = EcnuDecode.InsertToComplete(in: inputString)
                 // print(Captured_Data)
