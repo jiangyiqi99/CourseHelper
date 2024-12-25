@@ -491,7 +491,6 @@ class ShmtuDecode {
             // 添加课程到日历
             shmtucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
-                    self.shmtucalendarHelper.clearCourse()
                     let alertController = UIAlertController(
                         title: "完成",
                         message: message,
@@ -681,9 +680,5 @@ class ShmtuCalendar: ObservableObject {
                 print("保存事件失败: \(error.localizedDescription)")
             }
         }
-    }
-    
-    func clearCourse(){
-        self.courseTypes.removeAll()
     }
 }

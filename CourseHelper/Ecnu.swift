@@ -478,8 +478,6 @@ class EcnuDecode {
             ecnucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
                     
-                    self.ecnucalendarHelper.clearCourse()
-                    
                     let alertController = UIAlertController(
                         title: "完成",
                         message: message,
@@ -670,9 +668,5 @@ class EcnuCalendar: ObservableObject {
                 print("保存事件失败: \(error.localizedDescription)")
             }
         }
-    }
-    
-    func clearCourse(){
-        self.courseTypes.removeAll()
     }
 }
