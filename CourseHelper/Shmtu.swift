@@ -200,7 +200,7 @@ struct ShmtuCourseType {
 
 
 class ShmtuDecode {
-    private static let shmtucalendarHelper = ShmtuCalendar()
+    private let shmtucalendarHelper = ShmtuCalendar()
     
     // 定义课程信息结构体
     struct TaskActivity {
@@ -455,44 +455,43 @@ class ShmtuDecode {
                     
                     let (taskActivity, classSchedules, weeks) = self.parseScheduleData(input: String(inputData))
                     
-                    /*
-                     if let activity = taskActivity {
-                     // 打印课程详细信息
-                     
-                     print("课程ID: \(activity.taskID)")
-                     print("老师: \(activity.teacherName)")
-                     print("课程名: \(activity.courseName)")
-                     print("教室: \(activity.classroom)")
-                     print("上课周次: \(activity.schedule)")
-                     
-                     } else {
-                     print("未找到课程信息。")
-                     }
-                     */
+                    if let activity = taskActivity {
+                        
+                        
+                        //打印课程详细信息
+                        print("课程ID: \(activity.taskID)")
+                        print("老师: \(activity.teacherName)")
+                        print("课程名: \(activity.courseName)")
+                        print("教室: \(activity.classroom)")
+                        print("上课周次: \(activity.schedule)")
+                        
+                    } else {
+                        print("未找到课程信息。")
+                    }
                     
                     
                     // 计算并生成 ShmtuCourseType 对象
                     let generatedCourseTypes = self.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
                     
                     // 将生成的课程类型传递给 ShmtuCalendar
-                    ShmtuDecode.shmtucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
+                    shmtucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
                 }
             }
             
             // 根据用户选择设置 reminderOffset
             switch reminderTime {
             case "15分钟":
-                ShmtuDecode.shmtucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
+                shmtucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
             case "30分钟":
-                ShmtuDecode.shmtucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
+                shmtucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
             default:
-                ShmtuDecode.shmtucalendarHelper.reminderOffset = nil // 不提醒
+                shmtucalendarHelper.reminderOffset = nil // 不提醒
             }
             
             // 添加课程到日历
-            ShmtuDecode.shmtucalendarHelper.addCoursesToCalendar { success, message in
+            shmtucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
-                    ShmtuDecode.shmtucalendarHelper.clearCourse()
+                    self.shmtucalendarHelper.clearCourse()
                     let alertController = UIAlertController(
                         title: "完成",
                         message: message,
@@ -645,8 +644,7 @@ class ShmtuCalendar: ObservableObject {
     
     // 将所有待添加的课程转换为日历事件并保存
     func addCoursesToCalendar(completion: @escaping (Bool, String) -> Void) {
-        setupCalendar { [weak self] success in
-            guard let self = self else { return }
+        setupCalendar { [self] success in
             if success {
                 for course in self.courseTypes {
                     self.appendEvent(

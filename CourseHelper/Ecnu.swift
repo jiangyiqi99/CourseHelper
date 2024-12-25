@@ -202,7 +202,7 @@ struct EcnuCourseType {
 class EcnuDecode {
     
     
-    private static let ecnucalendarHelper = EcnuCalendar()
+    private let ecnucalendarHelper = EcnuCalendar()
     
     // 定义课程信息结构体
     struct TaskActivity {
@@ -460,25 +460,25 @@ class EcnuDecode {
                     let generatedCourseTypes = self.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
                     
                     // 将生成的课程类型传递给 Calendar
-                    EcnuDecode.ecnucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
+                    ecnucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
                 }
             }
             
             // 根据用户选择设置 reminderOffset
             switch reminderTime {
             case "15分钟":
-                EcnuDecode.ecnucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
+                ecnucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
             case "30分钟":
-                EcnuDecode.ecnucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
+                ecnucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
             default:
-                EcnuDecode.ecnucalendarHelper.reminderOffset = nil // 不提醒
+                ecnucalendarHelper.reminderOffset = nil // 不提醒
             }
             
             // 添加课程到日历
-            EcnuDecode.ecnucalendarHelper.addCoursesToCalendar { success, message in
+            ecnucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
                     
-                    EcnuDecode.ecnucalendarHelper.clearCourse()
+                    self.ecnucalendarHelper.clearCourse()
                     
                     let alertController = UIAlertController(
                         title: "完成",
@@ -549,8 +549,7 @@ class EcnuCalendar: ObservableObject {
     // 设置和请求权限，创建日历
     private func setupCalendar(completion: @escaping (Bool) -> Void) {
         // 请求访问权限
-        eventStore.requestAccess(to: .event) { [weak self] (granted, error) in
-            guard let self = self else { return }
+        eventStore.requestAccess(to: .event) { [self] (granted, error) in
             if granted {
                 self.createCalendar(completion: completion)
             } else {
