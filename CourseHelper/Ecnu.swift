@@ -20,7 +20,7 @@ struct EcnuWebView: UIViewRepresentable {
     /// 将原先的 (String) -> Void 改为 (String, String) -> Void，
     /// 用于同时回传 requestBody 和 responseText
     var onResponse: (String, String) -> Void
-
+    
     func makeUIView(context: Context) -> WKWebView {
         // 配置 WKWebView 的配置对象
         let configuration = WKWebViewConfiguration()
@@ -82,7 +82,7 @@ struct EcnuWebView: UIViewRepresentable {
         webView.navigationDelegate = context.coordinator
         return webView
     }
-
+    
     func updateUIView(_ webView: WKWebView, context: Context) {
         // 仅在需要时加载请求，避免重复加载
         if webView.url != url {
@@ -90,11 +90,11 @@ struct EcnuWebView: UIViewRepresentable {
             webView.load(request)
         }
     }
-
+    
     func makeCoordinator() -> Coordinator {
         return Coordinator(onResponse: onResponse)
     }
-
+    
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         /// 回调闭包，(requestBody, responseText)
         var onResponse: (String, String) -> Void
@@ -107,7 +107,7 @@ struct EcnuWebView: UIViewRepresentable {
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             print("WebView did finish loading")
         }
-
+        
         // 处理导航失败
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             print("WebView failed with error: \(error.localizedDescription)")
@@ -202,7 +202,7 @@ struct EcnuCourseType {
 class EcnuDecode {
     
     
-    static let ecnucalendarHelper = EcnuCalendar()
+    private let ecnucalendarHelper = EcnuCalendar()
     
     // 定义课程信息结构体
     struct TaskActivity {
@@ -214,21 +214,21 @@ class EcnuDecode {
         let classroom: String
         let schedule: String
     }
-
+    
     // 定义上课时间结构体
     struct ClassSchedule {
         let dayOfWeek: Int    // 0代表星期一，1代表星期二，依此类推
         let session: Int      // 第几节课（0代表第一节，1代表第二节）
     }
-
+    
     // 定义课程时间结构体
     struct CourseTime {
         let startDate: Date
         let endDate: Date
     }
-
+    
     // 定义第一周的起始日期（例如，2024年2月12日是星期一）
-    static var semesterStartDate: Date = {
+    private var semesterStartDate: Date = {
         var dateComponents = DateComponents()
         dateComponents.year = 2024
         dateComponents.month = 9
@@ -238,9 +238,9 @@ class EcnuDecode {
         let calendar = Calendar.current
         return calendar.date(from: dateComponents) ?? Date()
     }()
-
+    
     // 创建一个静态函数来修改 semesterStartDate
-    static func updateSemesterStartDate(with option: String) {
+    func updateSemesterStartDate(with option: String) {
         var dateComponents = DateComponents()
         dateComponents.hour = 0
         dateComponents.minute = 0
@@ -259,12 +259,12 @@ class EcnuDecode {
         }
         
         if let newDate = Calendar.current.date(from: dateComponents) {
-            semesterStartDate = newDate
+            self.semesterStartDate = newDate
         }
     }
-
+    
     // 定义每节课的时间段
-    static let classTimes: [Int: (start: String, end: String)] = [
+    private let classTimes: [Int: (start: String, end: String)] = [
         1: ("08:00", "08:45"),
         2: ("08:50", "09:35"),
         3: ("09:50", "10:35"),
@@ -280,19 +280,19 @@ class EcnuDecode {
         13: ("19:40", "20:25"),
         14: ("20:30", "21:15")
     ]
-
+    
     // 解析原始数据
-    static func parseScheduleData(input: String) -> (TaskActivity?, [ClassSchedule], [Int]) {
+    private func parseScheduleData(input: String) -> (TaskActivity?, [ClassSchedule], [Int]) {
         // 修改后的正则表达式，允许字段为空
         let taskActivityPattern = #"TaskActivity\("([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)"(?:\s*,\s*(?:"[^"]*"|null))*\);"#
-
+        
         // 正则表达式匹配所有 index 行
         let indexPattern = #"index\s*=\s*(\d+)\s*\*\s*unitCount\s*\+\s*(\d+);"#
-
+        
         var taskActivity: TaskActivity? = nil
         var classSchedules: [ClassSchedule] = []
         var weeks: [Int] = []
-
+        
         // 匹配 TaskActivity
         let taskMatches = input.matches(for: taskActivityPattern)
         for match in taskMatches {
@@ -308,7 +308,7 @@ class EcnuDecode {
                 )
             }
         }
-
+        
         // 匹配所有 index 行
         let indexMatches = input.matches(for: indexPattern)
         for match in indexMatches {
@@ -318,18 +318,18 @@ class EcnuDecode {
                 }
             }
         }
-
+        
         // 解析 schedule 字符串，获取上课周次
         if let schedule = taskActivity?.schedule {
-            weeks = getWeekNumbers(schedule: schedule)
+            weeks = self.getWeekNumbers(schedule: schedule)
         }
-
+        
         return (taskActivity, classSchedules, weeks)
     }
-
-
+    
+    
     // 根据 schedule 字符串获取上课周次
-    static func getWeekNumbers(schedule: String) -> [Int] {
+    private func getWeekNumbers(schedule: String) -> [Int] {
         var weekNumbers: [Int] = []
         let binarySchedule = Array(schedule)
         // 从第一位实际代表的第一周开始，index从1开始
@@ -340,20 +340,20 @@ class EcnuDecode {
         }
         return weekNumbers
     }
-
+    
     // 计算具体的上课时间并生成 CourseType 对象
-    static func computeCourseTimes(taskActivity: TaskActivity?, classSchedules: [ClassSchedule], weeks: [Int]) -> [EcnuCourseType] {
+    private func computeCourseTimes(taskActivity: TaskActivity?, classSchedules: [ClassSchedule], weeks: [Int]) -> [EcnuCourseType] {
         var courseTypes: [EcnuCourseType] = []
-
+        
         guard let activity = taskActivity else {
             print("未找到课程信息。")
             return courseTypes
         }
-
+        
         for schedule in classSchedules {
             let day = schedule.dayOfWeek // 0: 星期一, 1: 星期二, ..., 6: 星期日
             let session = schedule.session + 1 // 第几节课（1开始）
-
+            
             // 获取具体的时间段
             if let classTime = classTimes[session] {
                 // 计算具体的日期
@@ -361,33 +361,33 @@ class EcnuDecode {
                 for week in weekOffset {
                     if let classDate = Calendar.current.date(byAdding: .weekOfYear, value: week, to: semesterStartDate),
                        let specificDate = Calendar.current.date(byAdding: .day, value: day, to: classDate) {
-
+                        
                         // 解析 classTime.start 和 classTime.end 为时间组件
                         let dateFormatter = DateFormatter()
                         dateFormatter.dateFormat = "HH:mm"
-
+                        
                         guard let startTime = dateFormatter.date(from: classTime.start),
                               let endTime = dateFormatter.date(from: classTime.end) else {
                             continue
                         }
-
+                        
                         // 获取具体日期的年、月、日
                         let calendar = Calendar.current
                         let dateComponents = calendar.dateComponents([.year, .month, .day], from: specificDate)
-
+                        
                         // 获取时间组件的小时和分钟
                         let startComponents = calendar.dateComponents([.hour, .minute], from: startTime)
                         let endComponents = calendar.dateComponents([.hour, .minute], from: endTime)
-
+                        
                         // 组合日期和时间
                         var startDateComponents = dateComponents
                         startDateComponents.hour = startComponents.hour
                         startDateComponents.minute = startComponents.minute
-
+                        
                         var endDateComponents = dateComponents
                         endDateComponents.hour = endComponents.hour
                         endDateComponents.minute = endComponents.minute
-
+                        
                         if let startDate = calendar.date(from: startDateComponents),
                            let endDate = calendar.date(from: endDateComponents) {
                             let courseType = EcnuCourseType(
@@ -405,12 +405,12 @@ class EcnuDecode {
                 print("未定义的节次: 第\(session)节课")
             }
         }
-
+        
         return courseTypes
     }
-
-
-    static func InsertToComplete(in inputString: String) -> String {
+    
+    
+    func InsertToComplete(in inputString: String) -> String {
         let targetLine = "table0.marshalTable"
         let newLine = "            activity = new"
         
@@ -436,9 +436,7 @@ class EcnuDecode {
         return inputString
     }
     
-    static func MainProcess(inputString: String, reminderTime: String){
-        var alertMessage = ""
-        
+    func MainProcess(inputString: String, reminderTime: String){
         // 正则表达式，匹配"activity = new"之间的内容
         let pattern = "(?<=activity = new)(.*?)(?=activity = new)"
         
@@ -456,10 +454,10 @@ class EcnuDecode {
                     print("\n\n解析到数据")
                     let inputData = matchedString
                     
-                    let (taskActivity, classSchedules, weeks) = EcnuDecode.parseScheduleData(input: String(inputData))
+                    let (taskActivity, classSchedules, weeks) = self.parseScheduleData(input: String(inputData))
                     
                     // 计算并生成 CourseType 对象
-                    let generatedCourseTypes = EcnuDecode.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
+                    let generatedCourseTypes = self.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
                     
                     // 将生成的课程类型传递给 Calendar
                     self.ecnucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
@@ -479,9 +477,6 @@ class EcnuDecode {
             // 添加课程到日历
             self.ecnucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
-                    // 添加成功后清空课程类型数组
-                    self.ecnucalendarHelper.clearCourses()
-                    
                     let alertController = UIAlertController(
                         title: "完成",
                         message: message,
@@ -500,7 +495,7 @@ class EcnuDecode {
                     }
                 }
             }
-
+            
         } catch {
             print("无效的正则表达式: \(error)")
             let alertController = UIAlertController(
@@ -530,13 +525,13 @@ class EcnuCalendar: ObservableObject {
     private var calendar: EKCalendar?
     private var eventsToAdd: [EKEvent]
     private var isCalendarReady = false
-
+    
     // 存储课程类型
     private var courseTypes: [EcnuCourseType] = []
     
     // 新增的提醒时间偏移量属性（以秒为单位）
     var reminderOffset: TimeInterval? = nil
-
+    
     // 简化的初始化方法
     init() {
         self.eventStore = EKEventStore()
@@ -547,14 +542,9 @@ class EcnuCalendar: ObservableObject {
     func addCourses(courseTypes: [EcnuCourseType]) {
         self.courseTypes.append(contentsOf: courseTypes)
     }
-
-    // 清空课程类型
-    func clearCourses() {
-        self.courseTypes.removeAll()
-    }
-
+    
     // 设置和请求权限，创建日历
-    func setupCalendar(completion: @escaping (Bool) -> Void) {
+    private func setupCalendar(completion: @escaping (Bool) -> Void) {
         // 请求访问权限
         eventStore.requestAccess(to: .event) { [weak self] (granted, error) in
             guard let self = self else { return }
@@ -566,18 +556,18 @@ class EcnuCalendar: ObservableObject {
             }
         }
     }
- 
+    
     // 创建日历
     private func createCalendar(completion: @escaping (Bool) -> Void) {
         // 检查是否已存在的日历
         if let existingCalendar = eventStore.calendars(for: .event).first(where: { $0.title == "华东师范大学" }) {
             self.calendar = existingCalendar
             self.isCalendarReady = true
-            print("已存在日历: \(existingCalendar.title ?? "")")
+            print("已存在日历: \(existingCalendar.title)")
             completion(true)
             return
         }
-
+        
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
         newCalendar.title = "华东师范大学"
         
@@ -594,7 +584,7 @@ class EcnuCalendar: ObservableObject {
         do {
             try eventStore.saveCalendar(newCalendar, commit: true)
             self.calendar = newCalendar
-            print("创建日历成功: \(newCalendar.title ?? "")")
+            print("创建日历成功: \(newCalendar.title)")
             self.isCalendarReady = true
             completion(true)
         } catch {
@@ -602,7 +592,7 @@ class EcnuCalendar: ObservableObject {
             completion(false)
         }
     }
-
+    
     // 将事件添加到待添加事件列表
     private func appendEvent(title: String, startDate: Date, endDate: Date, location: String? = nil, notes: String? = nil) {
         guard isCalendarReady, let calendar = self.calendar else {
@@ -637,7 +627,7 @@ class EcnuCalendar: ObservableObject {
         self.eventsToAdd.append(event)
         print("事件已添加到待保存列表: \(event.title ?? "")")
     }
-
+    
     // 将所有待添加的课程转换为日历事件并保存
     func addCoursesToCalendar(completion: @escaping (Bool, String) -> Void) {
         setupCalendar { [weak self] success in
@@ -662,7 +652,7 @@ class EcnuCalendar: ObservableObject {
             }
         }
     }
-
+    
     // 一次性将所有待添加的事件保存到日历
     private func addAllEvents() {
         guard isCalendarReady, let calendar = self.calendar else {
@@ -678,8 +668,5 @@ class EcnuCalendar: ObservableObject {
                 print("保存事件失败: \(error.localizedDescription)")
             }
         }
-        
-        // 清空待添加的事件列表
-        eventsToAdd.removeAll()
     }
 }

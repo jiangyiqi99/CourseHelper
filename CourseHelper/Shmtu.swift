@@ -13,11 +13,11 @@ import WebKit
 struct ShmtuWebView: UIViewRepresentable {
     var url: URL
     let handleResponse: (String, String) -> Void
-
+    
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
         webView.navigationDelegate = context.coordinator
-
+        
         // Configure the script message handler
         webView.configuration.userContentController.add(context.coordinator, name: "jsHandler")
         
@@ -27,7 +27,7 @@ struct ShmtuWebView: UIViewRepresentable {
             // 保存原有的 open、send 方法
             var originalOpen = XMLHttpRequest.prototype.open;
             var originalSend = XMLHttpRequest.prototype.send;
-
+        
             // 重写 open 方法，用来获取请求的 method、url 等
             XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
                 // 把这几个参数先存到当前 XHR 实例上，后面 send 时也可用
@@ -36,16 +36,16 @@ struct ShmtuWebView: UIViewRepresentable {
                 this._async = async;
                 this._user = user;
                 this._pass = pass;
-
+        
                 // 调用原有的 open，保证不破坏正常功能
                 originalOpen.apply(this, arguments);
             };
-
+        
             // 重写 send 方法，用来获取 body
             XMLHttpRequest.prototype.send = function(body) {
                 // 把 body 也存到当前 XHR 实例上
                 this._body = body;
-
+        
                 // 如果只想监听特定接口，比如包含 "courseTableForStd!courseTable.action"
                 // 可以在这里判断：url 是否符合，若符合再加监听等
                 var checkUrl = 'courseTableForStd!courseTable.action';
@@ -64,53 +64,53 @@ struct ShmtuWebView: UIViewRepresentable {
                         }
                     });
                 }
-
+        
                 // 调用原有 send
                 originalSend.apply(this, arguments);
             };
         })();
         """
-
+        
         
         
         let userScript = WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: false)
         webView.configuration.userContentController.addUserScript(userScript)
-
+        
         return webView
     }
-
+    
     func updateUIView(_ webView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
         webView.load(request)
     }
-
+    
     func makeCoordinator() -> Coordinator {
         Coordinator(self)
     }
-
+    
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
         var parent: ShmtuWebView
-
+        
         init(_ webView: ShmtuWebView) {
             self.parent = webView
         }
-
+        
         func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
             decisionHandler(.allow)
         }
-
+        
         func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
             // Optionally handle page load completion
         }
-
+        
         func webView(_ webView: WKWebView, didReceive response: URLResponse, from navigation: WKNavigation!) {
             // Optionally handle HTTP responses
         }
-
+        
         func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
             // Optionally handle navigation errors
         }
-
+        
         // Handle messages from JavaScript
         func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
             if let messageBody = message.body as? [String: Any],
@@ -168,7 +168,7 @@ struct ShmtuWebView: UIViewRepresentable {
                 }
             }
         }
-
+        
         // 辅助函数用于解析请求体中的 semester.id
         func parseSemesterId(from requestBody: String) -> String {
             let pattern = "semester\\.id=(\\d+)"
@@ -186,7 +186,7 @@ struct ShmtuWebView: UIViewRepresentable {
                 return "未知学期"
             }
         }
-
+        
     }
 }
 
@@ -200,7 +200,7 @@ struct ShmtuCourseType {
 
 
 class ShmtuDecode {
-    static let shmtucalendarHelper = ShmtuCalendar()
+    private let shmtucalendarHelper = ShmtuCalendar()
     
     // 定义课程信息结构体
     struct TaskActivity {
@@ -212,21 +212,21 @@ class ShmtuDecode {
         let classroom: String
         let schedule: String
     }
-
+    
     // 定义上课时间结构体
     struct ClassSchedule {
         let dayOfWeek: Int    // 0代表星期一，1代表星期二，依此类推
         let session: Int      // 第几节课（0代表第一节，1代表第二节）
     }
-
+    
     // 定义课程时间结构体
     struct CourseTime {
         let startDate: Date
         let endDate: Date
     }
-
+    
     // 定义第一周的起始日期（例如，2024年2月12日是星期一）
-    static var semesterStartDate: Date = {
+    private var semesterStartDate: Date = {
         var dateComponents = DateComponents()
         dateComponents.year = 2024
         dateComponents.month = 9
@@ -236,9 +236,9 @@ class ShmtuDecode {
         let calendar = Calendar.current
         return calendar.date(from: dateComponents) ?? Date()
     }()
-
+    
     // 创建一个静态函数来修改 semesterStartDate
-    static func updateSemesterStartDate(with option: String) {
+    func updateSemesterStartDate(with option: String) {
         var dateComponents = DateComponents()
         dateComponents.hour = 0
         dateComponents.minute = 0
@@ -257,12 +257,12 @@ class ShmtuDecode {
         }
         
         if let newDate = Calendar.current.date(from: dateComponents) {
-            semesterStartDate = newDate
+            self.semesterStartDate = newDate
         }
     }
-
+    
     // 定义每节课的时间段
-    static let classTimes: [Int: (start: String, end: String)] = [
+    private let classTimes: [Int: (start: String, end: String)] = [
         1: ("08:20", "09:05"),
         2: ("09:10", "09:55"),
         3: ("10:15", "11:00"),
@@ -277,19 +277,19 @@ class ShmtuDecode {
         12: ("18:50", "19:35"),
         13: ("19:40", "20:25")
     ]
-
+    
     // 解析原始数据
-    static func parseScheduleData(input: String) -> (TaskActivity?, [ClassSchedule], [Int]) {
+    private func parseScheduleData(input: String) -> (TaskActivity?, [ClassSchedule], [Int]) {
         // 修改后的正则表达式，允许字段为空
         let taskActivityPattern = #"TaskActivity\("([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)"\);"#
-
+        
         // 正则表达式匹配所有 index 行
         let indexPattern = #"index\s*=\s*(\d+)\s*\*\s*unitCount\s*\+\s*(\d+);"#
-
+        
         var taskActivity: TaskActivity? = nil
         var classSchedules: [ClassSchedule] = []
         var weeks: [Int] = []
-
+        
         // 匹配 TaskActivity
         let taskMatches = input.matches(for: taskActivityPattern)
         for match in taskMatches {
@@ -305,7 +305,7 @@ class ShmtuDecode {
                 )
             }
         }
-
+        
         // 匹配所有 index 行
         let indexMatches = input.matches(for: indexPattern)
         for match in indexMatches {
@@ -315,19 +315,19 @@ class ShmtuDecode {
                 }
             }
         }
-
+        
         // 解析 schedule 字符串，获取上课周次
         if let schedule = taskActivity?.schedule {
             weeks = getWeekNumbers(schedule: schedule)
         }
-
+        
         return (taskActivity, classSchedules, weeks)
     }
-
     
-
+    
+    
     // 根据 schedule 字符串获取上课周次
-    static func getWeekNumbers(schedule: String) -> [Int] {
+    func getWeekNumbers(schedule: String) -> [Int] {
         var weekNumbers: [Int] = []
         let binarySchedule = Array(schedule)
         // 从第一位实际代表的第一周开始，index从1开始
@@ -338,20 +338,20 @@ class ShmtuDecode {
         }
         return weekNumbers
     }
-
+    
     // 计算具体的上课时间并生成 ShmtuCourseType 对象
-    static func computeCourseTimes(taskActivity: TaskActivity?, classSchedules: [ClassSchedule], weeks: [Int]) -> [ShmtuCourseType] {
+    private func computeCourseTimes(taskActivity: TaskActivity?, classSchedules: [ClassSchedule], weeks: [Int]) -> [ShmtuCourseType] {
         var courseTypes: [ShmtuCourseType] = []
-
+        
         guard let activity = taskActivity else {
             print("未找到课程信息。")
             return courseTypes
         }
-
+        
         for schedule in classSchedules {
             let day = schedule.dayOfWeek // 0: 星期一, 1: 星期二, ..., 6: 星期日
             let session = schedule.session + 1 // 第几节课（1开始）
-
+            
             // 获取具体的时间段
             if let classTime = classTimes[session] {
                 // 计算具体的日期
@@ -359,33 +359,33 @@ class ShmtuDecode {
                 for week in weekOffset {
                     if let classDate = Calendar.current.date(byAdding: .weekOfYear, value: week, to: semesterStartDate),
                        let specificDate = Calendar.current.date(byAdding: .day, value: day, to: classDate) {
-
+                        
                         // 解析 classTime.start 和 classTime.end 为时间组件
                         let dateFormatter = DateFormatter()
                         dateFormatter.dateFormat = "HH:mm"
-
+                        
                         guard let startTime = dateFormatter.date(from: classTime.start),
                               let endTime = dateFormatter.date(from: classTime.end) else {
                             continue
                         }
-
+                        
                         // 获取具体日期的年、月、日
                         let calendar = Calendar.current
                         let dateComponents = calendar.dateComponents([.year, .month, .day], from: specificDate)
-
+                        
                         // 获取时间组件的小时和分钟
                         let startComponents = calendar.dateComponents([.hour, .minute], from: startTime)
                         let endComponents = calendar.dateComponents([.hour, .minute], from: endTime)
-
+                        
                         // 组合日期和时间
                         var startDateComponents = dateComponents
                         startDateComponents.hour = startComponents.hour
                         startDateComponents.minute = startComponents.minute
-
+                        
                         var endDateComponents = dateComponents
                         endDateComponents.hour = endComponents.hour
                         endDateComponents.minute = endComponents.minute
-
+                        
                         if let startDate = calendar.date(from: startDateComponents),
                            let endDate = calendar.date(from: endDateComponents) {
                             let courseType = ShmtuCourseType(
@@ -403,12 +403,12 @@ class ShmtuDecode {
                 print("未定义的节次: 第\(session)节课")
             }
         }
-
+        
         return courseTypes
     }
-
-
-    static func InsertToComplete(in inputString: String) -> String {
+    
+    
+    func InsertToComplete(in inputString: String) -> String {
         let targetLine = "function containFakeCourse(fakeCourse)"
         let newLine = "            activity = new"
         
@@ -435,9 +435,7 @@ class ShmtuDecode {
     }
     
     
-    static func MainProcess(inputString: String, reminderTime: String){
-        var alertMessage = ""
-        
+    func MainProcess(inputString: String, reminderTime: String){
         // 正则表达式，匹配"activity = new"之间的内容
         let pattern = "(?<=activity = new)(.*?)(?=activity = new)"
         
@@ -455,26 +453,26 @@ class ShmtuDecode {
                     print("\n\n解析到数据")
                     let inputData = matchedString
                     
-                    let (taskActivity, classSchedules, weeks) = ShmtuDecode.parseScheduleData(input: String(inputData))
+                    let (taskActivity, classSchedules, weeks) = self.parseScheduleData(input: String(inputData))
                     
                     /*
-                    if let activity = taskActivity {
-                        // 打印课程详细信息
-                        
-                        print("课程ID: \(activity.taskID)")
-                        print("老师: \(activity.teacherName)")
-                        print("课程名: \(activity.courseName)")
-                        print("教室: \(activity.classroom)")
-                        print("上课周次: \(activity.schedule)")
-                         
-                    } else {
-                        print("未找到课程信息。")
-                    }
-                     */
+                     if let activity = taskActivity {
+                     // 打印课程详细信息
                      
+                     print("课程ID: \(activity.taskID)")
+                     print("老师: \(activity.teacherName)")
+                     print("课程名: \(activity.courseName)")
+                     print("教室: \(activity.classroom)")
+                     print("上课周次: \(activity.schedule)")
+                     
+                     } else {
+                     print("未找到课程信息。")
+                     }
+                     */
+                    
                     
                     // 计算并生成 ShmtuCourseType 对象
-                    let generatedCourseTypes = ShmtuDecode.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
+                    let generatedCourseTypes = self.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
                     
                     // 将生成的课程类型传递给 ShmtuCalendar
                     self.shmtucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
@@ -494,9 +492,6 @@ class ShmtuDecode {
             // 添加课程到日历
             self.shmtucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
-                    // 添加成功后清空课程类型数组
-                    self.shmtucalendarHelper.clearCourses()
-                    
                     let alertController = UIAlertController(
                         title: "完成",
                         message: message,
@@ -515,7 +510,7 @@ class ShmtuDecode {
                     }
                 }
             }
-
+            
         } catch {
             print("无效的正则表达式: \(error)")
             let alertController = UIAlertController(
@@ -543,13 +538,13 @@ class ShmtuCalendar: ObservableObject {
     private var calendar: EKCalendar?
     private var eventsToAdd: [EKEvent]
     private var isCalendarReady = false
-
+    
     // 存储课程类型
     private var courseTypes: [ShmtuCourseType] = []
     
     // 新增的提醒时间偏移量属性（以秒为单位）
     var reminderOffset: TimeInterval? = nil
-
+    
     // 简化的初始化方法
     init() {
         self.eventStore = EKEventStore()
@@ -560,14 +555,10 @@ class ShmtuCalendar: ObservableObject {
     func addCourses(courseTypes: [ShmtuCourseType]) {
         self.courseTypes.append(contentsOf: courseTypes)
     }
-
-    // 清空课程类型
-    func clearCourses() {
-        self.courseTypes.removeAll()
-    }
-
+    
+    
     // 设置和请求权限，创建日历
-    func setupCalendar(completion: @escaping (Bool) -> Void) {
+    private func setupCalendar(completion: @escaping (Bool) -> Void) {
         // 请求访问权限
         eventStore.requestAccess(to: .event) { [weak self] (granted, error) in
             guard let self = self else { return }
@@ -579,18 +570,18 @@ class ShmtuCalendar: ObservableObject {
             }
         }
     }
- 
+    
     // 创建"上海海事大学"日历
     private func createCalendar(completion: @escaping (Bool) -> Void) {
         // 检查是否已存在名为"上海海事大学"的日历
         if let existingCalendar = eventStore.calendars(for: .event).first(where: { $0.title == "上海海事大学" }) {
             self.calendar = existingCalendar
             self.isCalendarReady = true
-            print("已存在日历: \(existingCalendar.title ?? "")")
+            print("已存在日历: \(existingCalendar.title)")
             completion(true)
             return
         }
-
+        
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
         newCalendar.title = "上海海事大学"
         
@@ -607,7 +598,7 @@ class ShmtuCalendar: ObservableObject {
         do {
             try eventStore.saveCalendar(newCalendar, commit: true)
             self.calendar = newCalendar
-            print("创建日历成功: \(newCalendar.title ?? "")")
+            print("创建日历成功: \(newCalendar.title)")
             self.isCalendarReady = true
             completion(true)
         } catch {
@@ -615,7 +606,7 @@ class ShmtuCalendar: ObservableObject {
             completion(false)
         }
     }
-
+    
     // 将事件添加到待添加事件列表
     private func appendEvent(title: String, startDate: Date, endDate: Date, location: String? = nil, notes: String? = nil) {
         guard isCalendarReady, let calendar = self.calendar else {
@@ -650,7 +641,7 @@ class ShmtuCalendar: ObservableObject {
         self.eventsToAdd.append(event)
         print("事件已添加到待保存列表: \(event.title ?? "")")
     }
-
+    
     // 将所有待添加的课程转换为日历事件并保存
     func addCoursesToCalendar(completion: @escaping (Bool, String) -> Void) {
         setupCalendar { [weak self] success in
@@ -675,7 +666,7 @@ class ShmtuCalendar: ObservableObject {
             }
         }
     }
-
+    
     // 一次性将所有待添加的事件保存到日历
     private func addAllEvents() {
         guard isCalendarReady, let calendar = self.calendar else {
@@ -691,8 +682,5 @@ class ShmtuCalendar: ObservableObject {
                 print("保存事件失败: \(error.localizedDescription)")
             }
         }
-        
-        // 清空待添加的事件列表
-        eventsToAdd.removeAll()
     }
 }

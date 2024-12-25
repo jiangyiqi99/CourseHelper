@@ -72,31 +72,33 @@ struct ContentView: View {
         }
     }
     
-
+    
     
     var confirmButton: some View {
         Button("导入日历") {
             print("选择的学校: \(chosenSchool)")
             if chosenSchool == "上海海事大学" {
-                ShmtuDecode.updateSemesterStartDate(with: semesterInfo)
+                let shmtuCourse=ShmtuDecode()
+                shmtuCourse.updateSemesterStartDate(with: semesterInfo)
                 let inputString = capturedData
                 
-                let processedString = ShmtuDecode.InsertToComplete(in: inputString)
+                let processedString = shmtuCourse.InsertToComplete(in: inputString)
                 // print(Captured_Data)
                 
-                ShmtuDecode.MainProcess(inputString: processedString, reminderTime: self.reminderTime)
+                shmtuCourse.MainProcess(inputString: processedString, reminderTime: self.reminderTime)
                 self.showConfirmButton = false
                 
             }
             
             if chosenSchool == "华东师范大学" {
-                EcnuDecode.updateSemesterStartDate(with: semesterInfo)
+                let ecnuCourse=EcnuDecode()
+                ecnuCourse.updateSemesterStartDate(with: semesterInfo)
                 let inputString = capturedData
                 
-                let processedString = EcnuDecode.InsertToComplete(in: inputString)
+                let processedString = ecnuCourse.InsertToComplete(in: inputString)
                 // print(Captured_Data)
                 
-                EcnuDecode.MainProcess(inputString: processedString, reminderTime: self.reminderTime)
+                ecnuCourse.MainProcess(inputString: processedString, reminderTime: self.reminderTime)
                 self.showConfirmButton = false
                 
                 
