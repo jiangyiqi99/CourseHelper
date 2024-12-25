@@ -200,7 +200,7 @@ struct ShmtuCourseType {
 
 
 class ShmtuDecode {
-    private let shmtucalendarHelper = ShmtuCalendar()
+    private static let shmtucalendarHelper = ShmtuCalendar()
     
     // 定义课程信息结构体
     struct TaskActivity {
@@ -475,23 +475,24 @@ class ShmtuDecode {
                     let generatedCourseTypes = self.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
                     
                     // 将生成的课程类型传递给 ShmtuCalendar
-                    self.shmtucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
+                    ShmtuDecode.shmtucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
                 }
             }
             
             // 根据用户选择设置 reminderOffset
             switch reminderTime {
             case "15分钟":
-                shmtucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
+                ShmtuDecode.shmtucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
             case "30分钟":
-                shmtucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
+                ShmtuDecode.shmtucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
             default:
-                shmtucalendarHelper.reminderOffset = nil // 不提醒
+                ShmtuDecode.shmtucalendarHelper.reminderOffset = nil // 不提醒
             }
             
             // 添加课程到日历
-            self.shmtucalendarHelper.addCoursesToCalendar { success, message in
+            ShmtuDecode.shmtucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
+                    ShmtuDecode.shmtucalendarHelper.clearCourse()
                     let alertController = UIAlertController(
                         title: "完成",
                         message: message,
@@ -682,5 +683,9 @@ class ShmtuCalendar: ObservableObject {
                 print("保存事件失败: \(error.localizedDescription)")
             }
         }
+    }
+    
+    func clearCourse(){
+        self.courseTypes.removeAll()
     }
 }

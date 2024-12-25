@@ -202,7 +202,7 @@ struct EcnuCourseType {
 class EcnuDecode {
     
     
-    private let ecnucalendarHelper = EcnuCalendar()
+    private static let ecnucalendarHelper = EcnuCalendar()
     
     // 定义课程信息结构体
     struct TaskActivity {
@@ -460,23 +460,26 @@ class EcnuDecode {
                     let generatedCourseTypes = self.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
                     
                     // 将生成的课程类型传递给 Calendar
-                    self.ecnucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
+                    EcnuDecode.ecnucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
                 }
             }
             
             // 根据用户选择设置 reminderOffset
             switch reminderTime {
             case "15分钟":
-                ecnucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
+                EcnuDecode.ecnucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
             case "30分钟":
-                ecnucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
+                EcnuDecode.ecnucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
             default:
-                ecnucalendarHelper.reminderOffset = nil // 不提醒
+                EcnuDecode.ecnucalendarHelper.reminderOffset = nil // 不提醒
             }
             
             // 添加课程到日历
-            self.ecnucalendarHelper.addCoursesToCalendar { success, message in
+            EcnuDecode.ecnucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
+                    
+                    EcnuDecode.ecnucalendarHelper.clearCourse()
+                    
                     let alertController = UIAlertController(
                         title: "完成",
                         message: message,
@@ -668,5 +671,9 @@ class EcnuCalendar: ObservableObject {
                 print("保存事件失败: \(error.localizedDescription)")
             }
         }
+    }
+    
+    func clearCourse(){
+        self.courseTypes.removeAll()
     }
 }
