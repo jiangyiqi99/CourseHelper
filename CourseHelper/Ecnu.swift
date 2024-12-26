@@ -240,7 +240,7 @@ class EcnuDecode {
     }()
     
     // 创建一个静态函数来修改 semesterStartDate
-    func updateSemesterStartDate(with option: String) {
+    private func updateSemesterStartDate(with option: String) {
         var dateComponents = DateComponents()
         dateComponents.hour = 0
         dateComponents.minute = 0
@@ -410,7 +410,7 @@ class EcnuDecode {
     }
     
     
-    func InsertToComplete(in inputString: String) -> String {
+    private func InsertToComplete(in inputString: String) -> String {
         let targetLine = "table0.marshalTable"
         let newLine = "            activity = new"
         
@@ -436,7 +436,13 @@ class EcnuDecode {
         return inputString
     }
     
-    func MainProcess(inputString: String, reminderTime: String){
+    func MainProcess(capturedString: String, semesterInfo: String, reminderTime: String){
+        
+        self.updateSemesterStartDate(with: semesterInfo)
+        
+        let inputString = self.InsertToComplete(in: capturedString)
+        // print(Captured_Data)
+        
         // 正则表达式，匹配"activity = new"之间的内容
         let pattern = "(?<=activity = new)(.*?)(?=activity = new)"
         

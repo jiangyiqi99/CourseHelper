@@ -79,31 +79,18 @@ struct ContentView: View {
             print("选择的学校: \(chosenSchool)")
             if chosenSchool == "上海海事大学" {
                 let shmtuCourse=ShmtuDecode()
-                shmtuCourse.updateSemesterStartDate(with: semesterInfo)
-                let inputString = capturedData
-                
-                let processedString = shmtuCourse.InsertToComplete(in: inputString)
-                // print(Captured_Data)
-                
-                shmtuCourse.MainProcess(inputString: processedString, reminderTime: self.reminderTime)
+                shmtuCourse.MainProcess(capturedString: self.capturedData, semesterInfo: self.semesterInfo, reminderTime: self.reminderTime)
                 self.showConfirmButton = false
-                
             }
             
             if chosenSchool == "华东师范大学" {
                 let ecnuCourse=EcnuDecode()
-                ecnuCourse.updateSemesterStartDate(with: semesterInfo)
-                let inputString = capturedData
-                
-                let processedString = ecnuCourse.InsertToComplete(in: inputString)
-                // print(Captured_Data)
-                
-                ecnuCourse.MainProcess(inputString: processedString, reminderTime: self.reminderTime)
+                ecnuCourse.MainProcess(capturedString: capturedData, semesterInfo: self.semesterInfo, reminderTime: self.reminderTime)
                 self.showConfirmButton = false
-                
-                
             }
+            
         }
+        
         .disabled(!showConfirmButton)
     }
 }
