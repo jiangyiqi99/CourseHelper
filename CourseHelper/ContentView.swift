@@ -11,7 +11,7 @@ import Foundation
 
 
 struct ContentView: View {
-    let universities = ["上海海事大学", "华东师范大学"]
+    let universities = ["上海海事大学", "华东师范大学（TimTNT）", "上海财经大学（Polaris）"]
     @State private var showConfirmButton = false  // 控制确认按钮显示的状态变量
     
     @State private var chosenSchool = ""
@@ -40,9 +40,9 @@ struct ContentView: View {
                         ) {
                             Text(university)
                         }
-                    } else if university == "华东师范大学" {
+                    } else if university == "华东师范大学（TimTNT）" {
                         NavigationLink(
-                            destination: EcnuWebView(url: URL(string: "https://sso.ecnu.edu.cn/login?service=http:%2F%2Fapplicationnewjw.ecnu.edu.cn%2Feams%2Fhome.action%3Furl%3DcourseTableForStd")!) { response, semeInfo in
+                            destination: EcnuWebView(url: URL(string: "https://applicationnewjw.ecnu.edu.cn/eams/courseTableForStd.action")!) { response, semeInfo in
                                 // 接收来自 EcnuWebView 的响应数据
                                 self.capturedData = response
                                 self.semesterInfo = semeInfo
@@ -50,14 +50,27 @@ struct ContentView: View {
                                 self.showConfirmButton = true
                             }
                         ) {
-                            Text("华东师范大学")
+                            Text(university)
+                        }
+                    }
+                    else if university == "上海财经大学（Polaris）"{
+                        NavigationLink(
+                            destination: SufeWebView(url: URL(string: "https://eams.sufe.edu.cn/eams/courseTableForStd!index.action")!) { response, semeInfo in
+                                // 接收来自 EcnuWebView 的响应数据
+                                self.capturedData = response
+                                self.semesterInfo = semeInfo
+                                self.chosenSchool = "上海财经大学"
+                                self.showConfirmButton = true
+                            }
+                        ) {
+                            Text(university)
                         }
                     } else {
                         Text(university)
                     }
                 }
                 
-                // 新增的提醒时间选择项
+                // 提醒时间选择项
                 Section(header: Text("提醒时间")) {
                     Picker("提醒时间", selection: $reminderTime) {
                         ForEach(reminderOptions, id: \.self) { option in
@@ -78,14 +91,20 @@ struct ContentView: View {
         Button("导入日历") {
             print("选择的学校: \(chosenSchool)")
             if chosenSchool == "上海海事大学" {
-                let shmtuCourse=ShmtuDecode()
-                shmtuCourse.MainProcess(capturedString: self.capturedData, semesterInfo: self.semesterInfo, reminderTime: self.reminderTime)
+                let courseDecoder=ShmtuDecode()
+                courseDecoder.MainProcess(capturedString: self.capturedData, semesterInfo: self.semesterInfo, reminderTime: self.reminderTime)
                 self.showConfirmButton = false
             }
             
             if chosenSchool == "华东师范大学" {
-                let ecnuCourse=EcnuDecode()
-                ecnuCourse.MainProcess(capturedString: capturedData, semesterInfo: self.semesterInfo, reminderTime: self.reminderTime)
+                let courseDecoder=EcnuDecode()
+                courseDecoder.MainProcess(capturedString: capturedData, semesterInfo: self.semesterInfo, reminderTime: self.reminderTime)
+                self.showConfirmButton = false
+            }
+            
+            if chosenSchool == "上海财经大学" {
+                let courseDecoder=SufeDecode()
+                courseDecoder.MainProcess(capturedString: capturedData, semesterInfo: self.semesterInfo, reminderTime: self.reminderTime)
                 self.showConfirmButton = false
             }
             

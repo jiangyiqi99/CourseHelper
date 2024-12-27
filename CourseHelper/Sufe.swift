@@ -1,5 +1,5 @@
 //
-//  Ecnu.swift
+//  Sufe.swift
 //  CourseHelper
 //
 //  Created by 蒋翌琪 on 2024/12/23.
@@ -14,7 +14,7 @@ import WebKit
 import SwiftUI
 import WebKit
 
-struct EcnuWebView: UIViewRepresentable {
+struct SufeWebView: UIViewRepresentable {
     var url: URL
     
     /// 将原先的 (String) -> Void 改为 (String, String) -> Void，
@@ -104,8 +104,16 @@ struct EcnuWebView: UIViewRepresentable {
         }
         
         // 处理导航完成
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            print("WebView did finish loading")
+        func webView(_ webView: WKWebView, didReceive challenge: URLAuthenticationChallenge, completionHandler: @escaping (URLSession.AuthChallengeDisposition, URLCredential?) -> Void) {
+            if let serverTrust = challenge.protectionSpace.serverTrust,
+               let host = webView.url?.host, host.hasSuffix("sufe.edu.cn") {
+                // 针对sufe.edu.cn域名忽略SSL证书验证
+                let credential = URLCredential(trust: serverTrust)
+                completionHandler(.useCredential, credential)
+            } else {
+                // 对于其他域名，使用默认的处理方式
+                completionHandler(.performDefaultHandling, nil)
+            }
         }
         
         // 处理导航失败
@@ -173,9 +181,9 @@ struct EcnuWebView: UIViewRepresentable {
             if let range = requestBody.range(of: pattern, options: .regularExpression) {
                 let semesterId = requestBody[range].components(separatedBy: "=").last ?? ""
                 switch semesterId {
-                case "1281":
+                case "3588":
                     return "2024-2025学年1学期"
-                case "1313":
+                case "3628":
                     return "2024-2025学年2学期"
                 default:
                     return "未知学期"
@@ -189,7 +197,7 @@ struct EcnuWebView: UIViewRepresentable {
 
 
 
-struct EcnuCourseType {
+struct SufeCourseType {
     let courseName: String
     let teacherName: String
     let classroom: String
@@ -199,10 +207,10 @@ struct EcnuCourseType {
 
 
 
-class EcnuDecode {
+class SufeDecode {
     
     
-    private let ecnucalendarHelper = EcnuCalendar()
+    private let SufecalendarHelper = SufeCalendar()
     
     // 定义课程信息结构体
     struct TaskActivity {
@@ -210,7 +218,7 @@ class EcnuDecode {
         let teacherName: String
         let courseCode: String
         let courseName: String
-        let someID: String
+        let internalID: String
         let classroom: String
         let schedule: String
     }
@@ -239,7 +247,7 @@ class EcnuDecode {
         return calendar.date(from: dateComponents) ?? Date()
     }()
     
-    // 创建一个静态函数来修改 semesterStartDate
+    // 创建一个函数来修改 semesterStartDate
     private func updateSemesterStartDate(with option: String) {
         var dateComponents = DateComponents()
         dateComponents.hour = 0
@@ -249,11 +257,11 @@ class EcnuDecode {
         case "2024-2025学年1学期":
             dateComponents.year = 2024
             dateComponents.month = 9
-            dateComponents.day = 9
+            dateComponents.day = 2
         case "2024-2025学年2学期":
             dateComponents.year = 2025
             dateComponents.month = 2
-            dateComponents.day = 17
+            dateComponents.day = 24
         default:
             break
         }
@@ -266,23 +274,23 @@ class EcnuDecode {
     // 定义每节课的时间段
     private let classTimes: [Int: (start: String, end: String)] = [
         1: ("08:00", "08:45"),
-        2: ("08:50", "09:35"),
-        3: ("09:50", "10:35"),
-        4: ("10:40", "11:25"),
-        5: ("11:30", "12:15"),
-        6: ("13:00", "13:45"),
-        7: ("13:50", "14:35"),
-        8: ("14:50", "15:35"),
-        9: ("15:40", "16:25"),
-        10: ("16:30", "17:15"),
+        2: ("08:55", "09:40"),
+        3: ("10:05", "10:50"),
+        4: ("11:00", "11:45"),
+        5: ("11:55", "12:40"),
+        6: ("13:20", "14:05"),
+        7: ("14:15", "15:00"),
+        8: ("15:25", "16:10"),
+        9: ("16:20", "17:05"),
+        10: ("17:15", "18:00"),
         11: ("18:00", "18:45"),
-        12: ("18:50", "19:35"),
-        13: ("19:40", "20:25"),
-        14: ("20:30", "21:15")
+        12: ("18:55", "19:40"),
+        13: ("19:50", "20:35"),
+        14: ("20:45", "21:30")
     ]
     
     // 解析原始数据
-    private func parseScheduleData(input: String) -> (TaskActivity?, [ClassSchedule], [Int]) {
+    private func parseScheduleData(input: String, isGrade2: Bool) -> (TaskActivity?, [ClassSchedule], [Int]) {
         // 修改后的正则表达式，允许字段为空
         let taskActivityPattern = #"TaskActivity\("([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)",\s*"([^"]*)"(?:\s*,\s*(?:"[^"]*"|null))*\);"#
         
@@ -302,7 +310,7 @@ class EcnuDecode {
                     teacherName: match[2].isEmpty ? "未知" : match[2],
                     courseCode: match[3].isEmpty ? "未知" : match[3],
                     courseName: match[4].isEmpty ? "未知" : match[4],
-                    someID: match[5].isEmpty ? "未知" : match[5],
+                    internalID: match[5].isEmpty ? "未知" : match[5],
                     classroom: match[6].isEmpty ? "未知" : match[6],
                     schedule: match[7].isEmpty ? "未知" : match[7]
                 )
@@ -324,6 +332,10 @@ class EcnuDecode {
             weeks = self.getWeekNumbers(schedule: schedule)
         }
         
+        if isGrade2 {
+            weeks = weeks.map { $0 + 1 }
+        }
+        
         return (taskActivity, classSchedules, weeks)
     }
     
@@ -342,8 +354,8 @@ class EcnuDecode {
     }
     
     // 计算具体的上课时间并生成 CourseType 对象
-    private func computeCourseTimes(taskActivity: TaskActivity?, classSchedules: [ClassSchedule], weeks: [Int]) -> [EcnuCourseType] {
-        var courseTypes: [EcnuCourseType] = []
+    private func computeCourseTimes(taskActivity: TaskActivity?, classSchedules: [ClassSchedule], weeks: [Int]) -> [SufeCourseType] {
+        var courseTypes: [SufeCourseType] = []
         
         guard let activity = taskActivity else {
             print("未找到课程信息。")
@@ -390,7 +402,7 @@ class EcnuDecode {
                         
                         if let startDate = calendar.date(from: startDateComponents),
                            let endDate = calendar.date(from: endDateComponents) {
-                            let courseType = EcnuCourseType(
+                            let courseType = SufeCourseType(
                                 courseName: activity.courseName,
                                 teacherName: activity.teacherName,
                                 classroom: activity.classroom,
@@ -452,6 +464,8 @@ class EcnuDecode {
             // 查找所有匹配项
             let matches = regex.matches(in: inputString, options: [], range: NSRange(inputString.startIndex..., in: inputString))
             
+            let grade2 = inputString.contains("体育III")
+            
             for match in matches {
                 let range = match.range(at: 1) // 获取第一个捕获组
                 if let swiftRange = Range(range, in: inputString) {
@@ -460,28 +474,28 @@ class EcnuDecode {
                     print("\n\n解析到数据")
                     let inputData = matchedString
                     
-                    let (taskActivity, classSchedules, weeks) = self.parseScheduleData(input: String(inputData))
+                    let (taskActivity, classSchedules, weeks) = self.parseScheduleData(input: String(inputData), isGrade2: grade2)
                     
                     // 计算并生成 CourseType 对象
                     let generatedCourseTypes = self.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
-                    
+
                     // 将生成的课程类型传递给 Calendar
-                    ecnucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
+                    SufecalendarHelper.addCourses(courseTypes: generatedCourseTypes)
                 }
             }
             
             // 根据用户选择设置 reminderOffset
             switch reminderTime {
             case "15分钟":
-                ecnucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
+                SufecalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
             case "30分钟":
-                ecnucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
+                SufecalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
             default:
-                ecnucalendarHelper.reminderOffset = nil // 不提醒
+                SufecalendarHelper.reminderOffset = nil // 不提醒
             }
             
             // 添加课程到日历
-            ecnucalendarHelper.addCoursesToCalendar { success, message in
+            SufecalendarHelper.addCoursesToCalendar { success, message in
                 if success {
                     
                     let alertController = UIAlertController(
@@ -527,14 +541,14 @@ class EcnuDecode {
 }
 
 
-class EcnuCalendar: ObservableObject {
+class SufeCalendar: ObservableObject {
     private var eventStore: EKEventStore
     private var calendar: EKCalendar?
     private var eventsToAdd: [EKEvent]
     private var isCalendarReady = false
     
     // 存储课程类型
-    private var courseTypes: [EcnuCourseType] = []
+    private var courseTypes: [SufeCourseType] = []
     
     // 新增的提醒时间偏移量属性（以秒为单位）
     var reminderOffset: TimeInterval? = nil
@@ -546,7 +560,7 @@ class EcnuCalendar: ObservableObject {
     }
     
     // 添加课程类型，追加到现有数组
-    func addCourses(courseTypes: [EcnuCourseType]) {
+    func addCourses(courseTypes: [SufeCourseType]) {
         self.courseTypes.append(contentsOf: courseTypes)
     }
     
@@ -566,7 +580,7 @@ class EcnuCalendar: ObservableObject {
     // 创建日历
     private func createCalendar(completion: @escaping (Bool) -> Void) {
         // 检查是否已存在的日历
-        if let existingCalendar = eventStore.calendars(for: .event).first(where: { $0.title == "华东师范大学" }) {
+        if let existingCalendar = eventStore.calendars(for: .event).first(where: { $0.title == "上海财经大学" }) {
             self.calendar = existingCalendar
             self.isCalendarReady = true
             print("已存在日历: \(existingCalendar.title)")
@@ -575,7 +589,7 @@ class EcnuCalendar: ObservableObject {
         }
         
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
-        newCalendar.title = "华东师范大学"
+        newCalendar.title = "上海财经大学"
         
         // 设置日历来源，优先使用本地日历
         if let source = eventStore.sources.first(where: { $0.sourceType == .local }) {
@@ -644,7 +658,7 @@ class EcnuCalendar: ObservableObject {
                         title:"\(course.courseName)（\(course.teacherName)）",
                         startDate: course.startDate,
                         endDate: course.endDate,
-                        location: "华师大 \(course.classroom)"
+                        location: "上海财大 \(course.classroom)"
                     )
                 }
                 self.addAllEvents()
