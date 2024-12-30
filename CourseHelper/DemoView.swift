@@ -1,196 +1,195 @@
 //
-//  Shmtu.swift
+//  DemoView.swift
 //  CourseHelper
 //
-//  Created by 蒋翌琪 on 2024/12/23.
+//  Created by 蒋翌琪 on 2024/12/30.
 //
 
 import Foundation
 import EventKit
 import SwiftUI
-import WebKit
 
-struct ShmtuWebView: UIViewRepresentable {
-    var url: URL
-    let handleResponse: (String, String) -> Void
+
+struct DemoLoginView: View {
+    var universityName: String
+    @Binding var showConfirmButton: Bool
+    @Binding var capturedData: String
+    @Binding var chosenSchool: String
     
-    func makeUIView(context: Context) -> WKWebView {
-        let webView = WKWebView()
-        webView.navigationDelegate = context.coordinator
-        
-        // Configure the script message handler
-        webView.configuration.userContentController.add(context.coordinator, name: "jsHandler")
-        
-        // Inject JavaScript to capture specific XMLHttpRequests
-        let scriptSource = """
-        (function() {
-            // 保存原有的 open、send 方法
-            var originalOpen = XMLHttpRequest.prototype.open;
-            var originalSend = XMLHttpRequest.prototype.send;
-        
-            // 重写 open 方法，用来获取请求的 method、url 等
-            XMLHttpRequest.prototype.open = function(method, url, async, user, pass) {
-                // 把这几个参数先存到当前 XHR 实例上，后面 send 时也可用
-                this._method = method;
-                this._url = url;
-                this._async = async;
-                this._user = user;
-                this._pass = pass;
-        
-                // 调用原有的 open，保证不破坏正常功能
-                originalOpen.apply(this, arguments);
-            };
-        
-            // 重写 send 方法，用来获取 body
-            XMLHttpRequest.prototype.send = function(body) {
-                // 把 body 也存到当前 XHR 实例上
-                this._body = body;
-        
-                // 如果只想监听特定接口，比如包含 "courseTableForStd!courseTable.action"
-                // 可以在这里判断：url 是否符合，若符合再加监听等
-                var checkUrl = 'courseTableForStd!courseTable.action';
-                if (this._url && this._url.includes(checkUrl)) {
-                    // load 事件触发时，就把所有信息发送给 Swift
-                    this.addEventListener('load', () => {
-                        if (this.readyState === 4) {
-                            window.webkit.messageHandlers.jsHandler.postMessage({
-                                type: 'xhr',
-                                method: this._method,
-                                url: this._url,
-                                status: this.status,
-                                requestBody: this._body,
-                                responseText: this.responseText
-                            });
-                        }
-                    });
-                }
-        
-                // 调用原有 send
-                originalSend.apply(this, arguments);
-            };
-        })();
-        """
-        
-        
-        
-        let userScript = WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: false)
-        webView.configuration.userContentController.addUserScript(userScript)
-        
-        return webView
-    }
-    
-    func updateUIView(_ webView: WKWebView, context: Context) {
-        let request = URLRequest(url: url)
-        webView.load(request)
-    }
-    
-    func makeCoordinator() -> Coordinator {
-        Coordinator(self)
-    }
-    
-    class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
-        var parent: ShmtuWebView
-        
-        init(_ webView: ShmtuWebView) {
-            self.parent = webView
-        }
-        
-        func webView(_ webView: WKWebView, decidePolicyFor navigationAction: WKNavigationAction, decisionHandler: @escaping (WKNavigationActionPolicy) -> Void) {
-            decisionHandler(.allow)
-        }
-        
-        func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
-            // Optionally handle page load completion
-        }
-        
-        func webView(_ webView: WKWebView, didReceive response: URLResponse, from navigation: WKNavigation!) {
-            // Optionally handle HTTP responses
-        }
-        
-        func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
-            // Optionally handle navigation errors
-        }
-        
-        // Handle messages from JavaScript
-        func userContentController(_ userContentController: WKUserContentController, didReceive message: WKScriptMessage) {
-            if let messageBody = message.body as? [String: Any],
-               let type = messageBody["type"] as? String,
-               type == "xhr",
-               let responseText = messageBody["responseText"] as? String,
-               let requestBody = messageBody["requestBody"] as? String {
-                // 仅当同时获取到 requestBody 和 responseText 时处理
-                DispatchQueue.main.async {
+    // 添加状态变量以存储用户名和密码
+    @State private var username = ""
+    @State private var password = ""
+
+    var body: some View {
+        VStack {
+            Text("\(universityName) 登录")
+            TextField("用户名", text: $username)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            SecureField("密码", text: $password)
+                .textFieldStyle(RoundedBorderTextFieldStyle())
+                .padding()
+            Button("登录") {
+                // 模拟演示数据的操作
+                if(username=="test"&&password=="123456"){
                     
-                    // 解析学期信息
-                    let semesterInfo = self.parseSemesterId(from: requestBody)
-                    
-                    if(semesterInfo != "未知学期"){
-                        // 弹窗显示
-                        let alertController = UIAlertController(
-                            title: "提示",
-                            message: "获取到\(semesterInfo)的课表\n你可以选择切换学期或返回导入",
-                            preferredStyle: .alert
-                        )
-                        alertController.addAction(
-                            UIAlertAction(title: "OK", style: .default)
-                        )
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let rootVC = windowScene.windows.first?.rootViewController {
-                            var topController = rootVC
-                            while let presentedVC = topController.presentedViewController {
-                                topController = presentedVC
-                            }
-                            topController.present(alertController, animated: true)
+                    self.capturedData = """
+    var fakeCourses = [];
+            activity = new TaskActivity("9978","张芳芳","21621(JG510470_001)","数据库理论(JG510470_001)","5304","教学1A202","01111111111111111000000000000000000000000000000000000");
+            index =3*unitCount+6;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =3*unitCount+7;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("12456","郭佳民","20890(HH696001_001)","走进创业(HH696001_001)","5297","教学3A501","00000000000110000000000000000000000000000000000000000");
+            index =2*unitCount+10;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =2*unitCount+11;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =2*unitCount+12;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("12456","郭佳民","20890(HH696001_001)","走进创业(HH696001_001)","5254","教学3A103","00010000000000000000000000000000000000000000000000000");
+            index =2*unitCount+8;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =2*unitCount+9;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("115268","马菲菲","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5281","教学3A504","00000000000010000000000000000000000000000000000000000");
+            index =3*unitCount+10;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =3*unitCount+11;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =3*unitCount+12;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("111540","蒋亚文","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5281","教学3A504","00000000000100000000000000000000000000000000000000000");
+            index =3*unitCount+10;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =3*unitCount+11;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =3*unitCount+12;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("110422","宋智容","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5310","教学3B203","00010000000000000000000000000000000000000000000000000");
+            index =2*unitCount+6;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =2*unitCount+7;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("115299","何正","450(JG110410_008)","微观经济学(JG110410_008)","5351","教学2B201","01111111111111111000000000000000000000000000000000000");
+            index =3*unitCount+8;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =3*unitCount+9;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("115356","刘国芳","627(JG410460_004)","市场营销学(JG410460_004)","5307","教学2A305","01011111111111111000000000000000000000000000000000000");
+            index =4*unitCount+2;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =4*unitCount+3;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("115356","刘国芳","627(JG410460_004)","市场营销学(JG410460_004)","5267","教学2A205","00000010000000000000000000000000000000000000000000000");
+            index =0*unitCount+2;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =0*unitCount+3;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("10245","郭忠才","19208(WY110015_006)","大学英语（三）(WY110015_006)","7886","教学3C201","00000000010000010000000000000000000000000000000000000");
+            index =4*unitCount+0;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =4*unitCount+1;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("10245","郭忠才","19208(WY110015_006)","大学英语（三）(WY110015_006)","5268","教学3A405","00111111101111101000000000000000000000000000000000000");
+            index =4*unitCount+0;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =4*unitCount+1;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("10917","刘涛","21229(TY110043_008)","足球3(TY110043_008)","","","01111111111111111000000000000000000000000000000000000");
+            index =3*unitCount+2;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =3*unitCount+3;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","","","00000000000011000000000000000000000000000000000000000");
+            index =2*unitCount+8;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =2*unitCount+9;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","","","00000000000001000000000000000000000000000000000000000");
+            index =2*unitCount+6;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =2*unitCount+7;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","5522","教学3B303","01111111111111100000000000000000000000000000000000000");
+            index =0*unitCount+6;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =0*unitCount+7;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =0*unitCount+8;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("111101","李青","1605(WL210140_011)","概率论与数理统计(WL210140_011)","5541","教学3D109","01111111111111111000000000000000000000000000000000000");
+            index =1*unitCount+6;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =1*unitCount+7;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =1*unitCount+8;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("12559","郏丙贵","174(FX120320_003)","经济法(FX120320_003)","5304","教学1A202","00000000001000000000000000000000000000000000000000000");
+            index =2*unitCount+2;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =2*unitCount+3;
+            table0.activities[index][table0.activities[index].length]=activity;
+            activity = new TaskActivity("111516","卓睿璇","174(FX120320_003)","经济法(FX120320_003)","5304","教学1A202","01111111110111111000000000000000000000000000000000000");
+            index =2*unitCount+2;
+            table0.activities[index][table0.activities[index].length]=activity;
+            index =2*unitCount+3;
+            table0.activities[index][table0.activities[index].length]=activity;
+
+    
+    function containFakeCourse(fakeCourse) {
+        for(var i = 0; i < fakeCourses.length; i ++) {
+            if(fakeCourses[i] == fakeCourse) {
+                return true;
+            }
+        }
+        return false;
+"""
+                    self.showConfirmButton = true
+                    self.chosenSchool = "演示模式"
+                    let alertController = UIAlertController(
+                        title: "提示",
+                        message: "课表获取成功！\n返回到主界面点击右上角按钮导入",
+                        preferredStyle: .alert
+                    )
+                    alertController.addAction(
+                        UIAlertAction(title: "OK", style: .default)
+                    )
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let rootVC = windowScene.windows.first?.rootViewController {
+                        var topController = rootVC
+                        while let presentedVC = topController.presentedViewController {
+                            topController = presentedVC
                         }
-                        
-                        //返回到主进程
-                        self.parent.handleResponse(responseText,semesterInfo)
-                        
-                    } else {
-                        // 弹窗显示
-                        let alertController = UIAlertController(
-                            title: "错误",
-                            message: "未知学期\n\(requestBody)",
-                            preferredStyle: .alert
-                        )
-                        alertController.addAction(
-                            UIAlertAction(title: "OK", style: .default)
-                        )
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let rootVC = windowScene.windows.first?.rootViewController {
-                            var topController = rootVC
-                            while let presentedVC = topController.presentedViewController {
-                                topController = presentedVC
-                            }
-                            topController.present(alertController, animated: true)
+                        topController.present(alertController, animated: true)
+                    }
+                } else {
+                    let alertController = UIAlertController(
+                        title: "错误",
+                        message: "演示模式登录错误",
+                        preferredStyle: .alert
+                    )
+                    alertController.addAction(
+                        UIAlertAction(title: "OK", style: .default)
+                    )
+                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                       let rootVC = windowScene.windows.first?.rootViewController {
+                        var topController = rootVC
+                        while let presentedVC = topController.presentedViewController {
+                            topController = presentedVC
                         }
+                        topController.present(alertController, animated: true)
                     }
                 }
             }
         }
-        
-        // 辅助函数用于解析请求体中的 semester.id
-        func parseSemesterId(from requestBody: String) -> String {
-            let pattern = "semester\\.id=(\\d+)"
-            if let range = requestBody.range(of: pattern, options: .regularExpression) {
-                let semesterId = requestBody[range].components(separatedBy: "=").last ?? ""
-                switch semesterId {
-                case "376":
-                    return "2024-2025学年第二学期"
-                case "375":
-                    return "2024-2025学年第一学期"
-                default:
-                    return "未知学期"
-                }
-            } else {
-                return "未知学期"
-            }
-        }
-        
+        .padding()
+        .navigationBarTitle("演示模式（非真实账号）", displayMode: .inline)
     }
 }
 
-struct ShmtuCourseType {
+
+struct DemoCourseType {
     let courseName: String
     let teacherName: String
     let classroom: String
@@ -199,8 +198,8 @@ struct ShmtuCourseType {
 }
 
 
-class ShmtuDecode {
-    private let shmtucalendarHelper = ShmtuCalendar()
+class DemoDecode {
+    private let democalendarHelper = DemoCalendar()
     
     // 定义课程信息结构体
     struct TaskActivity {
@@ -226,40 +225,8 @@ class ShmtuDecode {
     }
     
     // 定义第一周的起始日期（例如，2024年2月12日是星期一）
-    private var semesterStartDate: Date = {
-        var dateComponents = DateComponents()
-        dateComponents.year = 2024
-        dateComponents.month = 9
-        dateComponents.day = 9
-        dateComponents.hour = 0
-        dateComponents.minute = 0
-        let calendar = Calendar.current
-        return calendar.date(from: dateComponents) ?? Date()
-    }()
+    private let semesterStartDate: Date = Date()
     
-    // 创建一个静态函数来修改 semesterStartDate
-    private func updateSemesterStartDate(with option: String) {
-        var dateComponents = DateComponents()
-        dateComponents.hour = 0
-        dateComponents.minute = 0
-        
-        switch option {
-        case "2024-2025学年第一学期":
-            dateComponents.year = 2024
-            dateComponents.month = 9
-            dateComponents.day = 9
-        case "2024-2025学年第二学期":
-            dateComponents.year = 2025
-            dateComponents.month = 2
-            dateComponents.day = 17
-        default:
-            break
-        }
-        
-        if let newDate = Calendar.current.date(from: dateComponents) {
-            self.semesterStartDate = newDate
-        }
-    }
     
     // 定义每节课的时间段
     private let classTimes: [Int: (start: String, end: String)] = [
@@ -339,9 +306,9 @@ class ShmtuDecode {
         return weekNumbers
     }
     
-    // 计算具体的上课时间并生成 ShmtuCourseType 对象
-    private func computeCourseTimes(taskActivity: TaskActivity?, classSchedules: [ClassSchedule], weeks: [Int]) -> [ShmtuCourseType] {
-        var courseTypes: [ShmtuCourseType] = []
+
+    private func computeCourseTimes(taskActivity: TaskActivity?, classSchedules: [ClassSchedule], weeks: [Int]) -> [DemoCourseType] {
+        var courseTypes: [DemoCourseType] = []
         
         guard let activity = taskActivity else {
             print("未找到课程信息。")
@@ -388,7 +355,7 @@ class ShmtuDecode {
                         
                         if let startDate = calendar.date(from: startDateComponents),
                            let endDate = calendar.date(from: endDateComponents) {
-                            let courseType = ShmtuCourseType(
+                            let courseType = DemoCourseType(
                                 courseName: activity.courseName,
                                 teacherName: activity.teacherName,
                                 classroom: activity.classroom,
@@ -435,9 +402,7 @@ class ShmtuDecode {
     }
     
     
-    func MainProcess(capturedString: String, semesterInfo: String, reminderTime: String){
-        
-        self.updateSemesterStartDate(with: semesterInfo)
+    func MainProcess(capturedString: String, reminderTime: String){
         let inputString = self.InsertToComplete(in: capturedString)
 
         
@@ -475,26 +440,24 @@ class ShmtuDecode {
                     }
                     
                     
-                    // 计算并生成 ShmtuCourseType 对象
                     let generatedCourseTypes = self.computeCourseTimes(taskActivity: taskActivity, classSchedules: classSchedules, weeks: weeks)
                     
-                    // 将生成的课程类型传递给 ShmtuCalendar
-                    shmtucalendarHelper.addCourses(courseTypes: generatedCourseTypes)
+                    democalendarHelper.addCourses(courseTypes: generatedCourseTypes)
                 }
             }
             
             // 根据用户选择设置 reminderOffset
             switch reminderTime {
             case "15分钟":
-                shmtucalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
+                democalendarHelper.reminderOffset = -900 // 15分钟 = 900秒
             case "30分钟":
-                shmtucalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
+                democalendarHelper.reminderOffset = -1800 // 30分钟 = 1800秒
             default:
-                shmtucalendarHelper.reminderOffset = nil // 不提醒
+                democalendarHelper.reminderOffset = nil // 不提醒
             }
             
             // 添加课程到日历
-            shmtucalendarHelper.addCoursesToCalendar { success, message in
+            democalendarHelper.addCoursesToCalendar { success, message in
                 if success {
                     let alertController = UIAlertController(
                         title: "完成",
@@ -537,14 +500,14 @@ class ShmtuDecode {
     }
 }
 
-class ShmtuCalendar: ObservableObject {
+class DemoCalendar: ObservableObject {
     private var eventStore: EKEventStore
     private var calendar: EKCalendar?
     private var eventsToAdd: [EKEvent]
     private var isCalendarReady = false
     
     // 存储课程类型
-    private var courseTypes: [ShmtuCourseType] = []
+    private var courseTypes: [DemoCourseType] = []
     
     // 新增的提醒时间偏移量属性（以秒为单位）
     var reminderOffset: TimeInterval? = nil
@@ -556,7 +519,7 @@ class ShmtuCalendar: ObservableObject {
     }
     
     // 添加课程类型，追加到现有数组
-    func addCourses(courseTypes: [ShmtuCourseType]) {
+    func addCourses(courseTypes: [DemoCourseType]) {
         self.courseTypes.append(contentsOf: courseTypes)
     }
     
@@ -577,8 +540,7 @@ class ShmtuCalendar: ObservableObject {
     
     // 创建"上海海事大学"日历
     private func createCalendar(completion: @escaping (Bool) -> Void) {
-        // 检查是否已存在名为"上海海事大学"的日历
-        if let existingCalendar = eventStore.calendars(for: .event).first(where: { $0.title == "上海海事大学" }) {
+        if let existingCalendar = eventStore.calendars(for: .event).first(where: { $0.title == "演示课表" }) {
             self.calendar = existingCalendar
             self.isCalendarReady = true
             print("已存在日历: \(existingCalendar.title)")
@@ -587,7 +549,7 @@ class ShmtuCalendar: ObservableObject {
         }
         
         let newCalendar = EKCalendar(for: .event, eventStore: eventStore)
-        newCalendar.title = "上海海事大学"
+        newCalendar.title = "演示课表"
         
         // 设置日历来源，优先使用本地日历
         if let source = eventStore.sources.first(where: { $0.sourceType == .local }) {
@@ -652,10 +614,9 @@ class ShmtuCalendar: ObservableObject {
             if success {
                 for course in self.courseTypes {
                     self.appendEvent(
-                        title:"\(course.courseName)（\(course.teacherName)）",
+                        title:"\(course.courseName)",
                         startDate: course.startDate,
-                        endDate: course.endDate,
-                        location: "上海海事大学 \(course.classroom)"
+                        endDate: course.endDate
                     )
                 }
                 self.addAllEvents()

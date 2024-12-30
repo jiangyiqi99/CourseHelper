@@ -3,4 +3,52 @@
    uuid = "35C2B5A4-4DD3-4E96-865B-FF85C658F7BD"
    type = "1"
    version = "2.0">
+   <Breakpoints>
+      <BreakpointProxy
+         BreakpointExtensionID = "Xcode.Breakpoint.FileBreakpoint">
+         <BreakpointContent
+            uuid = "A42BF42C-8862-408E-B5BE-16DA06E7DE66"
+            shouldBeEnabled = "Yes"
+            ignoreCount = "0"
+            continueAfterRunningActions = "No"
+            filePath = "CourseHelper/Shmtu.swift"
+            startingColumnNumber = "9223372036854775807"
+            endingColumnNumber = "9223372036854775807"
+            startingLineNumber = "229"
+            endingLineNumber = "229"
+            landmarkName = "semesterStartDate"
+            landmarkType = "24">
+            <Locations>
+               <Location
+                  uuid = "A42BF42C-8862-408E-B5BE-16DA06E7DE66 - 241c4477876020ca"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "closure #1 () -&gt; Foundation.Date in variable initialization expression of CourseHelper.ShmtuDecode.semesterStartDate : Foundation.Date"
+                  moduleName = "CourseHelper.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/jiangyiqi99/Documents/Xcode/CourseHelper/CourseHelper/Shmtu.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "229"
+                  endingLineNumber = "229">
+               </Location>
+               <Location
+                  uuid = "A42BF42C-8862-408E-B5BE-16DA06E7DE66 - 7b6996ad2b2932f0"
+                  shouldBeEnabled = "Yes"
+                  ignoreCount = "0"
+                  continueAfterRunningActions = "No"
+                  symbolName = "CourseHelper.ShmtuDecode.init() -&gt; CourseHelper.ShmtuDecode"
+                  moduleName = "CourseHelper.debug.dylib"
+                  usesParentBreakpointCondition = "Yes"
+                  urlString = "file:///Users/jiangyiqi99/Documents/Xcode/CourseHelper/CourseHelper/Shmtu.swift"
+                  startingColumnNumber = "9223372036854775807"
+                  endingColumnNumber = "9223372036854775807"
+                  startingLineNumber = "229"
+                  endingLineNumber = "229">
+               </Location>
+            </Locations>
+         </BreakpointContent>
+      </BreakpointProxy>
+   </Breakpoints>
 </Bucket>
