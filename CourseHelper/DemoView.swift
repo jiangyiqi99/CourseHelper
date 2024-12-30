@@ -19,172 +19,192 @@ struct DemoLoginView: View {
     // 添加状态变量以存储用户名和密码
     @State private var username = ""
     @State private var password = ""
+    @State private var isLoggedIn = false // 用于控制视图切换
 
     var body: some View {
-        VStack {
-            Text("\(universityName) 登录")
-            TextField("用户名", text: $username)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-            SecureField("密码", text: $password)
-                .textFieldStyle(RoundedBorderTextFieldStyle())
-                .padding()
-            Button("登录") {
-                // 模拟演示数据的操作
-                if(username=="test"&&password=="123456"){
-                    
-                    self.capturedData = """
-    var fakeCourses = [];
-            activity = new TaskActivity("9978","张芳芳","21621(JG510470_001)","数据库理论(JG510470_001)","5304","教学1A202","01111111111111111000000000000000000000000000000000000");
-            index =3*unitCount+6;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =3*unitCount+7;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("12456","郭佳民","20890(HH696001_001)","走进创业(HH696001_001)","5297","教学3A501","00000000000110000000000000000000000000000000000000000");
-            index =2*unitCount+10;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =2*unitCount+11;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =2*unitCount+12;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("12456","郭佳民","20890(HH696001_001)","走进创业(HH696001_001)","5254","教学3A103","00010000000000000000000000000000000000000000000000000");
-            index =2*unitCount+8;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =2*unitCount+9;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("115268","马菲菲","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5281","教学3A504","00000000000010000000000000000000000000000000000000000");
-            index =3*unitCount+10;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =3*unitCount+11;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =3*unitCount+12;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("111540","蒋亚文","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5281","教学3A504","00000000000100000000000000000000000000000000000000000");
-            index =3*unitCount+10;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =3*unitCount+11;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =3*unitCount+12;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("110422","宋智容","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5310","教学3B203","00010000000000000000000000000000000000000000000000000");
-            index =2*unitCount+6;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =2*unitCount+7;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("115299","何正","450(JG110410_008)","微观经济学(JG110410_008)","5351","教学2B201","01111111111111111000000000000000000000000000000000000");
-            index =3*unitCount+8;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =3*unitCount+9;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("115356","刘国芳","627(JG410460_004)","市场营销学(JG410460_004)","5307","教学2A305","01011111111111111000000000000000000000000000000000000");
-            index =4*unitCount+2;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =4*unitCount+3;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("115356","刘国芳","627(JG410460_004)","市场营销学(JG410460_004)","5267","教学2A205","00000010000000000000000000000000000000000000000000000");
-            index =0*unitCount+2;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =0*unitCount+3;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("10245","郭忠才","19208(WY110015_006)","大学英语（三）(WY110015_006)","7886","教学3C201","00000000010000010000000000000000000000000000000000000");
-            index =4*unitCount+0;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =4*unitCount+1;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("10245","郭忠才","19208(WY110015_006)","大学英语（三）(WY110015_006)","5268","教学3A405","00111111101111101000000000000000000000000000000000000");
-            index =4*unitCount+0;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =4*unitCount+1;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("10917","刘涛","21229(TY110043_008)","足球3(TY110043_008)","","","01111111111111111000000000000000000000000000000000000");
-            index =3*unitCount+2;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =3*unitCount+3;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","","","00000000000011000000000000000000000000000000000000000");
-            index =2*unitCount+8;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =2*unitCount+9;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","","","00000000000001000000000000000000000000000000000000000");
-            index =2*unitCount+6;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =2*unitCount+7;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","5522","教学3B303","01111111111111100000000000000000000000000000000000000");
-            index =0*unitCount+6;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =0*unitCount+7;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =0*unitCount+8;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("111101","李青","1605(WL210140_011)","概率论与数理统计(WL210140_011)","5541","教学3D109","01111111111111111000000000000000000000000000000000000");
-            index =1*unitCount+6;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =1*unitCount+7;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =1*unitCount+8;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("12559","郏丙贵","174(FX120320_003)","经济法(FX120320_003)","5304","教学1A202","00000000001000000000000000000000000000000000000000000");
-            index =2*unitCount+2;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =2*unitCount+3;
-            table0.activities[index][table0.activities[index].length]=activity;
-            activity = new TaskActivity("111516","卓睿璇","174(FX120320_003)","经济法(FX120320_003)","5304","教学1A202","01111111110111111000000000000000000000000000000000000");
-            index =2*unitCount+2;
-            table0.activities[index][table0.activities[index].length]=activity;
-            index =2*unitCount+3;
-            table0.activities[index][table0.activities[index].length]=activity;
+        Group {
+            if isLoggedIn {
+                // 登录成功后的视图
+                VStack {
+                    Text("登录成功 Success")
+                        .font(.largeTitle)
+                        .foregroundColor(.green)
+                    Text("Welcome \(universityName)\n请返回到主界面导入课表\nBack to the main page to Import schedule")
+                        .font(.title2)
+                        .padding()
+                }
+            } else {
+                // 登录界面
+                VStack {
+                    Text("\(universityName) 登录")
+                        .font(.headline)
+                    TextField("用户名", text: $username)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                    SecureField("密码", text: $password)
+                        .textFieldStyle(RoundedBorderTextFieldStyle())
+                        .padding()
+                    Button("登录") {
+                        // 模拟演示数据的操作
+                        if username == "test" && password == "123456" {
+                            // 设置登录成功状态
+                            self.capturedData = """
+            var fakeCourses = [];
+                    activity = new TaskActivity("9978","张芳芳","21621(JG510470_001)","数据库理论(JG510470_001)","5304","教学1A202","01111111111111111000000000000000000000000000000000000");
+                    index =3*unitCount+6;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =3*unitCount+7;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("12456","郭佳民","20890(HH696001_001)","走进创业(HH696001_001)","5297","教学3A501","00000000000110000000000000000000000000000000000000000");
+                    index =2*unitCount+10;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =2*unitCount+11;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =2*unitCount+12;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("12456","郭佳民","20890(HH696001_001)","走进创业(HH696001_001)","5254","教学3A103","00010000000000000000000000000000000000000000000000000");
+                    index =2*unitCount+8;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =2*unitCount+9;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("115268","马菲菲","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5281","教学3A504","00000000000010000000000000000000000000000000000000000");
+                    index =3*unitCount+10;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =3*unitCount+11;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =3*unitCount+12;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("111540","蒋亚文","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5281","教学3A504","00000000000100000000000000000000000000000000000000000");
+                    index =3*unitCount+10;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =3*unitCount+11;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =3*unitCount+12;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("110422","宋智容","20295(YS393004_001)","世界著名博物馆艺术经典(YS393004_001)","5310","教学3B203","00010000000000000000000000000000000000000000000000000");
+                    index =2*unitCount+6;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =2*unitCount+7;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("115299","何正","450(JG110410_008)","微观经济学(JG110410_008)","5351","教学2B201","01111111111111111000000000000000000000000000000000000");
+                    index =3*unitCount+8;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =3*unitCount+9;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("115356","刘国芳","627(JG410460_004)","市场营销学(JG410460_004)","5307","教学2A305","01011111111111111000000000000000000000000000000000000");
+                    index =4*unitCount+2;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =4*unitCount+3;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("115356","刘国芳","627(JG410460_004)","市场营销学(JG410460_004)","5267","教学2A205","00000010000000000000000000000000000000000000000000000");
+                    index =0*unitCount+2;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =0*unitCount+3;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("10245","郭忠才","19208(WY110015_006)","大学英语（三）(WY110015_006)","7886","教学3C201","00000000010000010000000000000000000000000000000000000");
+                    index =4*unitCount+0;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =4*unitCount+1;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("10245","郭忠才","19208(WY110015_006)","大学英语（三）(WY110015_006)","5268","教学3A405","00111111101111101000000000000000000000000000000000000");
+                    index =4*unitCount+0;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =4*unitCount+1;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("10917","刘涛","21229(TY110043_008)","足球3(TY110043_008)","","","01111111111111111000000000000000000000000000000000000");
+                    index =3*unitCount+2;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =3*unitCount+3;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","","","00000000000011000000000000000000000000000000000000000");
+                    index =2*unitCount+8;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =2*unitCount+9;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","","","00000000000001000000000000000000000000000000000000000");
+                    index =2*unitCount+6;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =2*unitCount+7;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("111368","冉光芬","20924(WL410140_017)","马克思主义基本原理(WL410140_017)","5522","教学3B303","01111111111111100000000000000000000000000000000000000");
+                    index =0*unitCount+6;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =0*unitCount+7;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =0*unitCount+8;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("111101","李青","1605(WL210140_011)","概率论与数理统计(WL210140_011)","5541","教学3D109","01111111111111111000000000000000000000000000000000000");
+                    index =1*unitCount+6;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =1*unitCount+7;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =1*unitCount+8;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("12559","郏丙贵","174(FX120320_003)","经济法(FX120320_003)","5304","教学1A202","00000000001000000000000000000000000000000000000000000");
+                    index =2*unitCount+2;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =2*unitCount+3;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    activity = new TaskActivity("111516","卓睿璇","174(FX120320_003)","经济法(FX120320_003)","5304","教学1A202","01111111110111111000000000000000000000000000000000000");
+                    index =2*unitCount+2;
+                    table0.activities[index][table0.activities[index].length]=activity;
+                    index =2*unitCount+3;
+                    table0.activities[index][table0.activities[index].length]=activity;
 
-    
-    function containFakeCourse(fakeCourse) {
-        for(var i = 0; i < fakeCourses.length; i ++) {
-            if(fakeCourses[i] == fakeCourse) {
-                return true;
-            }
-        }
-        return false;
-"""
-                    self.showConfirmButton = true
-                    self.chosenSchool = "演示模式"
-                    let alertController = UIAlertController(
-                        title: "提示",
-                        message: "课表获取成功！\n返回到主界面点击右上角按钮导入",
-                        preferredStyle: .alert
-                    )
-                    alertController.addAction(
-                        UIAlertAction(title: "OK", style: .default)
-                    )
-                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                       let rootVC = windowScene.windows.first?.rootViewController {
-                        var topController = rootVC
-                        while let presentedVC = topController.presentedViewController {
-                            topController = presentedVC
-                        }
-                        topController.present(alertController, animated: true)
-                    }
-                } else {
-                    let alertController = UIAlertController(
-                        title: "错误",
-                        message: "演示模式登录错误",
-                        preferredStyle: .alert
-                    )
-                    alertController.addAction(
-                        UIAlertAction(title: "OK", style: .default)
-                    )
-                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                       let rootVC = windowScene.windows.first?.rootViewController {
-                        var topController = rootVC
-                        while let presentedVC = topController.presentedViewController {
-                            topController = presentedVC
-                        }
-                        topController.present(alertController, animated: true)
+            
+            function containFakeCourse(fakeCourse) {
+                for(var i = 0; i < fakeCourses.length; i ++) {
+                    if(fakeCourses[i] == fakeCourse) {
+                        return true;
                     }
                 }
+                return false;
+        """
+                            showConfirmButton = true
+                            chosenSchool = "演示模式"
+                            isLoggedIn = true // 切换到登录成功的视图
+                            let alertController = UIAlertController(
+                                title: "成功",
+                                message: "成功获取到课表！\n请返回主界面导入课表",
+                                preferredStyle: .alert
+                            )
+                            alertController.addAction(
+                                UIAlertAction(title: "OK", style: .default)
+                            )
+                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                               let rootVC = windowScene.windows.first?.rootViewController {
+                                var topController = rootVC
+                                while let presentedVC = topController.presentedViewController {
+                                    topController = presentedVC
+                                }
+                                topController.present(alertController, animated: true)
+                            }
+                        } else {
+                            // 显示错误提示
+                            let alertController = UIAlertController(
+                                title: "错误",
+                                message: "演示模式登录错误",
+                                preferredStyle: .alert
+                            )
+                            alertController.addAction(
+                                UIAlertAction(title: "OK", style: .default)
+                            )
+                            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
+                               let rootVC = windowScene.windows.first?.rootViewController {
+                                var topController = rootVC
+                                while let presentedVC = topController.presentedViewController {
+                                    topController = presentedVC
+                                }
+                                topController.present(alertController, animated: true)
+                            }
+                        }
+                    }
+                    .padding()
+                }
+                .navigationBarTitle("演示模式（非真实账号）", displayMode: .inline)
             }
         }
-        .padding()
-        .navigationBarTitle("演示模式（非真实账号）", displayMode: .inline)
+        .animation(.easeInOut, value: isLoggedIn) // 添加切换动画
     }
 }
 
