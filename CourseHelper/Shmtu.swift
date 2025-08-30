@@ -179,6 +179,8 @@ struct ShmtuWebView: UIViewRepresentable {
                     return "2024-2025学年第二学期"
                 case "375":
                     return "2024-2025学年第一学期"
+                case "395":
+                    return "2025-2026学年第一学期"
                 default:
                     return "未知学期"
                 }
@@ -252,6 +254,10 @@ class ShmtuDecode {
             dateComponents.year = 2025
             dateComponents.month = 2
             dateComponents.day = 17
+        case "2025-2026学年第一学期":
+            dateComponents.year = 2025
+            dateComponents.month = 9
+            dateComponents.day = 15
         default:
             break
         }
@@ -655,7 +661,7 @@ class ShmtuCalendar: ObservableObject {
                         title:"\(course.courseName)（\(course.teacherName)）",
                         startDate: course.startDate,
                         endDate: course.endDate,
-                        location: "上海海事大学 \(course.classroom)"
+                        location: "\(course.classroom) 上海海事大学"
                     )
                 }
                 self.addAllEvents()

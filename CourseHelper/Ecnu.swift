@@ -177,6 +177,8 @@ struct EcnuWebView: UIViewRepresentable {
                     return "2024-2025学年1学期"
                 case "1313":
                     return "2024-2025学年2学期"
+                case "1345":
+                    return "2025-2026学年1学期"
                 default:
                     return "未知学期"
                 }
@@ -254,6 +256,10 @@ class EcnuDecode {
             dateComponents.year = 2025
             dateComponents.month = 2
             dateComponents.day = 17
+        case "2025-2026学年1学期":
+            dateComponents.year = 2025
+            dateComponents.month = 9
+            dateComponents.day = 8
         default:
             break
         }

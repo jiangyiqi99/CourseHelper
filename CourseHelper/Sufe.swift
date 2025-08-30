@@ -185,6 +185,8 @@ struct SufeWebView: UIViewRepresentable {
                     return "2024-2025学年1学期"
                 case "3628":
                     return "2024-2025学年2学期"
+                case "3729":
+                    return "2025-2026学年1学期"
                 default:
                     return "未知学期"
                 }
@@ -262,6 +264,10 @@ class SufeDecode {
             dateComponents.year = 2025
             dateComponents.month = 2
             dateComponents.day = 24
+        case "2025-2026学年1学期":
+            dateComponents.year = 2025
+            dateComponents.month = 9
+            dateComponents.day = 8
         default:
             break
         }
