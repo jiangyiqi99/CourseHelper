@@ -16,10 +16,8 @@ import WebKit
 
 struct EcnuWebView: UIViewRepresentable {
     var url: URL
-    
-    /// 将原先的 (String) -> Void 改为 (String, String) -> Void，
-    /// 用于同时回传 requestBody 和 responseText
     var onResponse: (String, String) -> Void
+    var onAlert: ((String, String) -> Void)?
     
     func makeUIView(context: Context) -> WKWebView {
         // 配置 WKWebView 的配置对象
@@ -92,15 +90,16 @@ struct EcnuWebView: UIViewRepresentable {
     }
     
     func makeCoordinator() -> Coordinator {
-        return Coordinator(onResponse: onResponse)
+        return Coordinator(onResponse: onResponse, onAlert: onAlert)
     }
-    
+
     class Coordinator: NSObject, WKNavigationDelegate, WKScriptMessageHandler {
-        /// 回调闭包，(requestBody, responseText)
         var onResponse: (String, String) -> Void
-        
-        init(onResponse: @escaping (String, String) -> Void) {
+        var onAlert: ((String, String) -> Void)?
+
+        init(onResponse: @escaping (String, String) -> Void, onAlert: ((String, String) -> Void)?) {
             self.onResponse = onResponse
+            self.onAlert = onAlert
         }
         
         // 处理导航完成
@@ -123,45 +122,10 @@ struct EcnuWebView: UIViewRepresentable {
                     let semesterInfo = parseSemesterId(from: requestBody)
                     
                     if(semesterInfo != "未知学期"){
-                        // 弹窗显示
-                        let alertController = UIAlertController(
-                            title: "提示",
-                            message: "获取到\(semesterInfo)的课表\n你可以选择切换学期或返回导入",
-                            preferredStyle: .alert
-                        )
-                        alertController.addAction(
-                            UIAlertAction(title: "OK", style: .default)
-                        )
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let rootVC = windowScene.windows.first?.rootViewController {
-                            var topController = rootVC
-                            while let presentedVC = topController.presentedViewController {
-                                topController = presentedVC
-                            }
-                            topController.present(alertController, animated: true)
-                        }
-                        
-                        //返回到主进程
+                        onAlert?("提示", "获取到\(semesterInfo)的课表\n你可以选择切换学期或返回导入")
                         onResponse(responseText, semesterInfo)
-                        
                     } else {
-                        // 弹窗显示
-                        let alertController = UIAlertController(
-                            title: "错误",
-                            message: "未知学期\n\(requestBody)",
-                            preferredStyle: .alert
-                        )
-                        alertController.addAction(
-                            UIAlertAction(title: "OK", style: .default)
-                        )
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let rootVC = windowScene.windows.first?.rootViewController {
-                            var topController = rootVC
-                            while let presentedVC = topController.presentedViewController {
-                                topController = presentedVC
-                            }
-                            topController.present(alertController, animated: true)
-                        }
+                        onAlert?("错误", "未知学期\n\(requestBody)")
                     }
                 }
             }
@@ -442,7 +406,7 @@ class EcnuDecode {
         return inputString
     }
     
-    func MainProcess(capturedString: String, semesterInfo: String, reminderTime: String){
+    func MainProcess(capturedString: String, semesterInfo: String, reminderTime: String, onAlert: ((String, String) -> Void)? = nil){
         
         self.updateSemesterStartDate(with: semesterInfo)
         
@@ -489,44 +453,13 @@ class EcnuDecode {
             // 添加课程到日历
             ecnucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
-                    
-                    let alertController = UIAlertController(
-                        title: "完成",
-                        message: message,
-                        preferredStyle: .alert
-                    )
-                    alertController.addAction(
-                        UIAlertAction(title: "OK", style: .default)
-                    )
-                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                       let rootVC = windowScene.windows.first?.rootViewController {
-                        var topController = rootVC
-                        while let presentedVC = topController.presentedViewController {
-                            topController = presentedVC
-                        }
-                        topController.present(alertController, animated: true)
-                    }
+                    onAlert?("完成", message)
                 }
             }
             
         } catch {
             print("无效的正则表达式: \(error)")
-            let alertController = UIAlertController(
-                title: "出错",
-                message: "解析数据时出错",
-                preferredStyle: .alert
-            )
-            alertController.addAction(
-                UIAlertAction(title: "OK", style: .default)
-            )
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootVC = windowScene.windows.first?.rootViewController {
-                var topController = rootVC
-                while let presentedVC = topController.presentedViewController {
-                    topController = presentedVC
-                }
-                topController.present(alertController, animated: true)
-            }
+            onAlert?("出错", "解析数据时出错")
         }
     }
     

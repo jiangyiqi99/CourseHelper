@@ -13,6 +13,7 @@ import WebKit
 struct ShmtuWebView: UIViewRepresentable {
     var url: URL
     let handleResponse: (String, String) -> Void
+    var onAlert: ((String, String) -> Void)?
     
     func makeUIView(context: Context) -> WKWebView {
         let webView = WKWebView()
@@ -76,12 +77,13 @@ struct ShmtuWebView: UIViewRepresentable {
         let userScript = WKUserScript(source: scriptSource, injectionTime: .atDocumentStart, forMainFrameOnly: false)
         webView.configuration.userContentController.addUserScript(userScript)
         
-        return webView
-    }
-    
-    func updateUIView(_ webView: WKWebView, context: Context) {
         let request = URLRequest(url: url)
         webView.load(request)
+        return webView
+    }
+
+    func updateUIView(_ webView: WKWebView, context: Context) {
+        // 不在此处重新加载，避免 SwiftUI 状态更新导致页面反复刷新
     }
     
     func makeCoordinator() -> Coordinator {
@@ -125,45 +127,10 @@ struct ShmtuWebView: UIViewRepresentable {
                     let semesterInfo = self.parseSemesterId(from: requestBody)
                     
                     if(semesterInfo != "未知学期"){
-                        // 弹窗显示
-                        let alertController = UIAlertController(
-                            title: "提示",
-                            message: "获取到\(semesterInfo)的课表\n你可以选择切换学期或返回导入",
-                            preferredStyle: .alert
-                        )
-                        alertController.addAction(
-                            UIAlertAction(title: "OK", style: .default)
-                        )
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let rootVC = windowScene.windows.first?.rootViewController {
-                            var topController = rootVC
-                            while let presentedVC = topController.presentedViewController {
-                                topController = presentedVC
-                            }
-                            topController.present(alertController, animated: true)
-                        }
-                        
-                        //返回到主进程
-                        self.parent.handleResponse(responseText,semesterInfo)
-                        
+                        self.parent.onAlert?("提示", "获取到\(semesterInfo)的课表\n你可以选择切换学期或返回导入")
+                        self.parent.handleResponse(responseText, semesterInfo)
                     } else {
-                        // 弹窗显示
-                        let alertController = UIAlertController(
-                            title: "错误",
-                            message: "未知学期\n\(requestBody)",
-                            preferredStyle: .alert
-                        )
-                        alertController.addAction(
-                            UIAlertAction(title: "OK", style: .default)
-                        )
-                        if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                           let rootVC = windowScene.windows.first?.rootViewController {
-                            var topController = rootVC
-                            while let presentedVC = topController.presentedViewController {
-                                topController = presentedVC
-                            }
-                            topController.present(alertController, animated: true)
-                        }
+                        self.parent.onAlert?("错误", "未知学期\n\(requestBody)")
                     }
                 }
             }
@@ -181,6 +148,8 @@ struct ShmtuWebView: UIViewRepresentable {
                     return "2024-2025学年第一学期"
                 case "395":
                     return "2025-2026学年第一学期"
+                case "396":
+                    return "2025-2026学年第二学期"
                 default:
                     return "未知学期"
                 }
@@ -258,6 +227,10 @@ class ShmtuDecode {
             dateComponents.year = 2025
             dateComponents.month = 9
             dateComponents.day = 15
+        case "2025-2026学年第二学期":
+            dateComponents.year = 2026
+            dateComponents.month = 3
+            dateComponents.day = 9
         default:
             break
         }
@@ -441,7 +414,7 @@ class ShmtuDecode {
     }
     
     
-    func MainProcess(capturedString: String, semesterInfo: String, reminderTime: String){
+    func MainProcess(capturedString: String, semesterInfo: String, reminderTime: String, onAlert: ((String, String) -> Void)? = nil){
         
         self.updateSemesterStartDate(with: semesterInfo)
         let inputString = self.InsertToComplete(in: capturedString)
@@ -502,43 +475,13 @@ class ShmtuDecode {
             // 添加课程到日历
             shmtucalendarHelper.addCoursesToCalendar { success, message in
                 if success {
-                    let alertController = UIAlertController(
-                        title: "完成",
-                        message: message,
-                        preferredStyle: .alert
-                    )
-                    alertController.addAction(
-                        UIAlertAction(title: "OK", style: .default)
-                    )
-                    if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-                       let rootVC = windowScene.windows.first?.rootViewController {
-                        var topController = rootVC
-                        while let presentedVC = topController.presentedViewController {
-                            topController = presentedVC
-                        }
-                        topController.present(alertController, animated: true)
-                    }
+                    onAlert?("完成", message)
                 }
             }
             
         } catch {
             print("无效的正则表达式: \(error)")
-            let alertController = UIAlertController(
-                title: "出错",
-                message: "解析数据时出错",
-                preferredStyle: .alert
-            )
-            alertController.addAction(
-                UIAlertAction(title: "OK", style: .default)
-            )
-            if let windowScene = UIApplication.shared.connectedScenes.first as? UIWindowScene,
-               let rootVC = windowScene.windows.first?.rootViewController {
-                var topController = rootVC
-                while let presentedVC = topController.presentedViewController {
-                    topController = presentedVC
-                }
-                topController.present(alertController, animated: true)
-            }
+            onAlert?("出错", "解析数据时出错")
         }
     }
 }
